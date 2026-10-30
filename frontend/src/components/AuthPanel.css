@@ -464,6 +464,7 @@
   .auth-title-big {
     font-size: 2rem;
     line-height: 1.08;
+    letter-spacing: 0;
   }
 
   .auth-left {
