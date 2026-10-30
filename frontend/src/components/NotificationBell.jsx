@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import API_BASE_URL from "../services/api";
-import "./NotificationBell.css";
-
+import { useEffect, useRef, useState } from 'react';
+import API_BASE_URL from '../services/api';
+import './NotificationBell.css';
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -12,28 +11,28 @@ function NotificationBell() {
   const firstLoadRef = useRef(true);
 
   const playNotificationSound = () => {
-    const audio = new Audio("/notification-beep.mp3");
+    const audio = new Audio('/notification-beep.mp3');
     audio.volume = 0.5;
 
     audio.play().catch(() => {
-      console.log("Som bloqueado pelo navegador até interação do usuário.");
+      console.log('Som bloqueado pelo navegador até interação do usuário.');
     });
   };
 
   const loadNotifications = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       const response = await fetch(
         `${API_BASE_URL}/api/notifications?t=${Date.now()}`,
         {
-          method: "GET",
-          cache: "no-store",
+          method: 'GET',
+          cache: 'no-store',
           headers: {
             Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache",
+            'Cache-Control': 'no-cache',
           },
-        },
+        }
       );
 
       const data = await response.json();
@@ -51,16 +50,16 @@ function NotificationBell() {
       setNotifications(data.notifications || []);
       setUnreadCount(newUnreadCount);
     } catch (error) {
-      console.log("Erro ao carregar notificações:", error);
+      console.log('Erro ao carregar notificações:', error);
     }
   };
 
   const markAsRead = async (notificationId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -70,8 +69,8 @@ function NotificationBell() {
         prev.map((notification) =>
           notification._id === notificationId
             ? { ...notification, read: true }
-            : notification,
-        ),
+            : notification
+        )
       );
 
       setUnreadCount((prev) => {
@@ -86,10 +85,10 @@ function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -99,7 +98,7 @@ function NotificationBell() {
         prev.map((notification) => ({
           ...notification,
           read: true,
-        })),
+        }))
       );
 
       previousUnreadCountRef.current = 0;
@@ -111,17 +110,17 @@ function NotificationBell() {
 
   const clearReadNotifications = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
 
       await fetch(`${API_BASE_URL}/api/notifications/clear-read`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       setNotifications((prev) =>
-        prev.filter((notification) => !notification.read),
+        prev.filter((notification) => !notification.read)
       );
     } catch (error) {
       console.log(error);
@@ -148,7 +147,7 @@ function NotificationBell() {
     <div className="notification-container">
       <button
         className={`tiktok-action-btn notification-btn ${
-          unreadCount > 0 ? "has-notifications" : ""
+          unreadCount > 0 ? 'has-notifications' : ''
         }`}
         onClick={() => setOpen(!open)}
         title="Notificações"
@@ -156,7 +155,7 @@ function NotificationBell() {
         🔔
         {unreadCount > 0 && (
           <span className="notification-count">
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
@@ -188,14 +187,14 @@ function NotificationBell() {
               <div
                 key={notification._id}
                 className={`notification-card ${
-                  notification.read ? "read" : "unread"
+                  notification.read ? 'read' : 'unread'
                 }`}
                 onClick={() => markAsRead(notification._id)}
               >
                 <p>{notification.message}</p>
 
                 <span>
-                  {new Date(notification.createdAt).toLocaleString("pt-BR")}
+                  {new Date(notification.createdAt).toLocaleString('pt-BR')}
                 </span>
               </div>
             ))

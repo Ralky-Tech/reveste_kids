@@ -9,7 +9,6 @@
   overflow-x: hidden;
 }
 
-
 .auth-main {
   flex: 1;
 
@@ -18,7 +17,6 @@
 
   min-height: 0;
 }
-
 
 .auth-left {
   padding: 12px 72px 8px;
@@ -59,7 +57,6 @@
   min-height: 0;
 }
 
-
 .auth-preview-image {
   width: 100%;
 
@@ -79,12 +76,10 @@
   user-select: none;
   pointer-events: none;
 
-  transform: translateX(120px)
-    translateY(-70px);
+  transform: translateX(120px) translateY(-70px);
 
   margin-bottom: -200px;
 }
-
 
 .auth-title-big {
   font-size: 4rem;
@@ -117,7 +112,6 @@
   color: #ffffff;
 }
 
-
 .auth-right {
   background: #1f1f22;
 
@@ -143,10 +137,8 @@
 
   margin-bottom: 24px;
 
-  font-family: Helvetica, Arial,
-    sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
 }
-
 
 .auth-form {
   display: flex;
@@ -172,7 +164,8 @@
   background: #121214;
   color: #ffffff;
 
-  transition: border-color 0.2s ease,
+  transition:
+    border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
@@ -183,8 +176,7 @@
 .auth-form input:focus {
   border-color: #8b5cf6;
 
-  box-shadow: 0 0 0 2px
-    rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
 }
 
 .auth-form button {
@@ -203,14 +195,14 @@
 
   margin-top: 6px;
 
-  transition: background 0.2s ease,
+  transition:
+    background 0.2s ease,
     transform 0.2s ease;
 }
 
 .auth-form button:hover {
   background: #7c3aed;
 }
-
 
 .forgot-password {
   margin-top: 12px;
@@ -229,14 +221,14 @@
   display: block;
   margin-inline: auto;
 
-  transition: color 0.2s ease,
+  transition:
+    color 0.2s ease,
     opacity 0.2s ease;
 }
 
 .forgot-password:hover {
   color: #d1d5db;
 }
-
 
 .google-btn {
   width: 100%;
@@ -259,7 +251,8 @@
 
   cursor: pointer;
 
-  transition: background 0.2s ease,
+  transition:
+    background 0.2s ease,
     border-color 0.2s ease;
 }
 
@@ -276,7 +269,6 @@
   object-fit: contain;
   display: block;
 }
-
 
 .auth-toggle {
   display: flex;
@@ -304,7 +296,8 @@
   font-weight: 700;
   font-size: 1.05rem;
 
-  transition: background 0.2s ease,
+  transition:
+    background 0.2s ease,
     border-color 0.2s ease;
 }
 
@@ -315,7 +308,6 @@
 
   color: #ffffff;
 }
-
 
 .auth-message {
   margin-top: 14px;
@@ -334,7 +326,6 @@
   color: #f87171;
 }
 
-
 .auth-brand {
   margin-top: 12px;
 
@@ -352,8 +343,7 @@
   object-fit: contain;
   display: block;
 
-  filter: brightness(0)
-    invert(1);
+  filter: brightness(0) invert(1);
 }
 
 .auth-brand span {
@@ -365,7 +355,6 @@
   font-weight: 600;
   letter-spacing: 0.3px;
 }
-
 
 .auth-footer {
   width: 100%;
@@ -431,7 +420,6 @@
   font-size: 12px;
 }
 
-
 @media (max-width: 1100px) {
   .auth-main {
     grid-template-columns: 1fr;
@@ -440,8 +428,7 @@
   .auth-left {
     border-right: none;
 
-    border-bottom: 1px solid
-      #4a4d53;
+    border-bottom: 1px solid #4a4d53;
 
     padding: 30px 24px;
 

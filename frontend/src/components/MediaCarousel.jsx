@@ -1,7 +1,7 @@
-import { useState } from "react";
-import "./MediaCarousel.css";
+import { useState } from 'react';
+import './MediaCarousel.css';
 
-function MediaCarousel({ media = [], alt = "Mídia" }) {
+function MediaCarousel({ media = [], alt = 'Mídia' }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
@@ -51,7 +51,7 @@ function MediaCarousel({ media = [], alt = "Mídia" }) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {currentItem.type === "video" ? (
+      {currentItem.type === 'video' ? (
         <video
           src={currentItem.url}
           className="carousel-image"
@@ -90,7 +90,7 @@ function MediaCarousel({ media = [], alt = "Mídia" }) {
               <button
                 key={index}
                 type="button"
-                className={`carousel-dot ${index === currentIndex ? "active" : ""}`}
+                className={`carousel-dot ${index === currentIndex ? 'active' : ''}`}
                 onClick={() => setCurrentIndex(index)}
               />
             ))}

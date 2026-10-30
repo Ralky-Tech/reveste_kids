@@ -78,6 +78,7 @@
 .add-page {
   min-height: 100vh;
   padding: 42px 48px;
+  padding-top: 20px;
   background: var(--bg-page);
 }
 
@@ -124,11 +125,7 @@
 
 .add-form-card,
 .add-preview-card {
-  background: linear-gradient(
-    135deg,
-    var(--bg-card),
-    var(--bg-card-soft)
-  );
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-card-soft));
   border: 1px solid var(--border-soft);
   border-radius: 26px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
@@ -446,7 +443,6 @@
   object-fit: contain;
   opacity: 0.7;
 }
-
 
 .form-action-icon {
   width: 40px;
