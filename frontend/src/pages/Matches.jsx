@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../services/api';
 import { socket } from '../services/socket';
 import './Matches.css';
 
 function Matches() {
-  const navigate = useNavigate();
   const currentTheme =
     document.documentElement.getAttribute('data-theme') || 'dark';
 

@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../services/api';
 import MediaCarousel from '../components/MediaCarousel';
 import Footer from '../components/Footer';
 import './SearchClosets.css';
 
 function SearchClosets() {
-  const navigate = useNavigate();
-
   const [clothes, setClothes] = useState([]);
   const [likedIds, setLikedIds] = useState([]);
   const [loading, setLoading] = useState(true);

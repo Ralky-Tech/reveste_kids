@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import Footer from './Footer';
 
-export default function Menu({ children, theme, toggleTheme }) {
+export default function Menu({ children, theme }) {
   const navigate = useNavigate();
   const location = useLocation();
   const hideSidebarPages = ['/', '/register', '/feed', '/feed-tiktok'];

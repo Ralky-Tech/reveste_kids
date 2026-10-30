@@ -49,7 +49,7 @@ function LayoutWithTheme() {
   };
 
   return (
-    <Menu theme={theme} toggleTheme={toggleTheme}>
+    <Menu theme={theme}>
       <Outlet context={{ theme, toggleTheme }} />
     </Menu>
   );
