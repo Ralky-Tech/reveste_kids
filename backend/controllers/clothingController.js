@@ -2,7 +2,7 @@ import clothingService from "../services/clothingService.js";
 
 const createClothing = async (req, res) => {
   try {
-    const { title, description, size, category, media, condition } = req.body;
+    const { title, description, size, category, media, condition, style } = req.body;
 
     const clothing = await clothingService.create({
       title,
@@ -11,6 +11,7 @@ const createClothing = async (req, res) => {
       category,
       media,
       condition,
+      style,
       userId: req.loggerUser.id,
     });
 
@@ -19,6 +20,12 @@ const createClothing = async (req, res) => {
       clothing,
     });
   } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(400).json({ error: error.message });
+    }
+    if (error.name === "ValidationError" || error.name === "CastError") {
+      return res.status(400).json({ error: "Dados da peça inválidos" });
+    }
     console.log(error);
     return res.status(500).json({
       error: "Não foi possível cadastrar a peça",

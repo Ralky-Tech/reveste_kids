@@ -174,7 +174,10 @@ test("PUT: owner edits permitted fields; extra frontend fields and ownership cha
   assert.equal(res.body.clothing.userId, owner);
   assert.deepEqual(calls, [{
     operation: "update", filter: { _id: clothingId, userId: owner },
-    update: { $set: { title: "Nova", description: "Nova descricao", media: [] } },
+    update: { $set: {
+      title: "Nova", description: "Nova descricao", media: [],
+      size: "", category: "", condition: "",
+    } },
     options: { new: true, runValidators: true },
   }]);
   assert.deepEqual(body.userId, stranger, "Request body not mutated");
@@ -186,7 +189,9 @@ for (const field of ["title", "description", "media"]) {
     const before = structuredClone(records.get(clothingId));
     const res = await request("put", { body: { [field]: value } });
     assert.equal(res.statusCode, 200);
-    assert.deepEqual(res.body.clothing, { ...before, [field]: value });
+    assert.deepEqual(res.body.clothing, {
+      ...before, category: "", size: "", condition: "", style: "", [field]: value,
+    });
   });
 }
 
@@ -195,7 +200,7 @@ for (const body of [
   { title: { $ne: null } }, { media: [{ $set: { url: "injected" } }] },
   { "media.0.url": "injected" }, { title: "Valid", userId: { $ne: null } },
   [{ $set: { title: "pipeline" } }], [], null, "invalid", {},
-  { userId: stranger, _id: missingId }, { size: "4" },
+  { userId: stranger, _id: missingId },
 ]) {
   test("PUT: unsafe/empty body rejected before model access " + JSON.stringify(body), async () => {
     const before = structuredClone(records.get(clothingId));
@@ -205,6 +210,15 @@ for (const body of [
     assert.deepEqual(records.get(clothingId), before);
   });
 }
+
+test("PUT: size is now editable without weakening ownership protection", async () => {
+  const res = await request("put", { body: { size: "4" } });
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.clothing.size, "4");
+  assert.deepEqual(calls[0].filter, { _id: clothingId, userId: owner });
+  assert.deepEqual(calls[0].update, { $set: { size: "4" } });
+  assert.deepEqual(calls[0].options, { new: true, runValidators: true });
+});
 
 for (const name of ["ValidationError", "CastError"]) {
   test("PUT: " + name + " becomes 400 without leaking internal details", async () => {

@@ -1,3 +1,21 @@
+const clothingAttributeProperties = Object.fromEntries(
+  Object.entries({
+    category: "Camiseta",
+    size: "6",
+    condition: "Seminova",
+    style: "Casual",
+  }).map(([name, example]) => [
+    name,
+    {
+      type: "string",
+      default: "",
+      example,
+      description:
+        "Opcional. Espaços nas extremidades são removidos. String vazia limpa o atributo; omissão no PUT preserva o valor. Peças antigas sem o campo são retornadas com string vazia.",
+    },
+  ])
+);
+
 const swaggerSpec = {
   openapi: "3.0.0",
   info: {
@@ -136,21 +154,10 @@ const swaggerSpec = {
             type: "string",
             example: "Camiseta em bom estado, tamanho 6.",
           },
-          size: {
-            type: "string",
-            example: "6",
-          },
-          category: {
-            type: "string",
-            example: "Camiseta",
-          },
-          gender: {
-            type: "string",
-            example: "Unissex",
-          },
-          imageUrl: {
-            type: "string",
-            example: "https://res.cloudinary.com/exemplo/image/upload/camiseta.jpg",
+          ...clothingAttributeProperties,
+          media: {
+            type: "array",
+            items: { $ref: "#/components/schemas/ClothingMedia" },
           },
           userId: {
             type: "string",
@@ -160,6 +167,7 @@ const swaggerSpec = {
       },
       ClothingInput: {
         type: "object",
+        required: ["title", "description"],
         properties: {
           title: {
             type: "string",
@@ -169,22 +177,43 @@ const swaggerSpec = {
             type: "string",
             example: "Camiseta em bom estado, tamanho 6.",
           },
-          size: {
-            type: "string",
-            example: "6",
+          ...clothingAttributeProperties,
+          media: {
+            type: "array",
+            items: { $ref: "#/components/schemas/ClothingMedia" },
           },
-          category: {
+        },
+      },
+      ClothingMedia: {
+        type: "object",
+        required: ["type", "url"],
+        properties: {
+          type: { type: "string", enum: ["image", "video"] },
+          url: {
             type: "string",
-            example: "Camiseta",
+            example: "https://example.invalid/roupa-ficticia.png",
           },
-          gender: {
-            type: "string",
-            example: "Unissex",
+        },
+      },
+      ClothingUpdateInput: {
+        type: "object",
+        description:
+          "Atualização parcial. Somente title, description, media, category, size, condition e style são editáveis. _id e userId são ignorados. Operadores MongoDB e caminhos pontuados são rejeitados. Informe ao menos um campo editável.",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" },
+          media: {
+            type: "array",
+            items: { $ref: "#/components/schemas/ClothingMedia" },
           },
-          image: {
-            type: "string",
-            format: "binary",
-          },
+          ...clothingAttributeProperties,
+        },
+      },
+      ClothingMutationResponse: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+          clothing: { $ref: "#/components/schemas/Clothing" },
         },
       },
       Notification: {
@@ -280,11 +309,13 @@ const swaggerSpec = {
       post: {
         tags: ["Clothes"],
         summary: "Cadastrar nova peça de roupa",
+        description:
+          "Recebe JSON com URLs de mídias já disponíveis. O proprietário é definido pelo JWT, nunca pelo corpo da requisição.",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            "multipart/form-data": {
+            "application/json": {
               schema: {
                 $ref: "#/components/schemas/ClothingInput",
               },
@@ -292,7 +323,15 @@ const swaggerSpec = {
           },
         },
         responses: {
-          201: { description: "Peça cadastrada com sucesso" },
+          201: {
+            description: "Peça cadastrada com sucesso",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ClothingMutationResponse" },
+              },
+            },
+          },
+          400: { description: "Dados inválidos; os atributos devem ser strings" },
           401: { description: "Não autorizado" },
           500: { description: "Erro interno do servidor" },
         },
@@ -314,6 +353,41 @@ const swaggerSpec = {
         responses: {
           200: { description: "Peça encontrada" },
           404: { description: "Peça não encontrada" },
+          500: { description: "Erro interno do servidor" },
+        },
+      },
+      put: {
+        tags: ["Clothes"],
+        summary: "Editar uma peça de roupa do usuário autenticado",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", pattern: "^[a-fA-F0-9]{24}$" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/ClothingUpdateInput" },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Peça atualizada com sucesso",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ClothingMutationResponse" },
+              },
+            },
+          },
+          400: { description: "ID, atributos ou operação de atualização inválidos" },
+          401: { description: "Não autorizado" },
+          404: { description: "Peça inexistente ou pertencente a outro usuário" },
           500: { description: "Erro interno do servidor" },
         },
       },
