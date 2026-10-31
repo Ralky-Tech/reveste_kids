@@ -10,6 +10,26 @@ const clothingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    category: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    size: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    condition: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    style: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     media: {
       type: [
         {
