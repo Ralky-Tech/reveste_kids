@@ -1,6 +1,49 @@
 import Clothing from "../models/Clothing.js";
 import Interest from "../models/Interest.js";
 
+const isObjectId = (value) =>
+  typeof value === "string" && /^[a-fA-F0-9]{24}$/.test(value);
+
+const requestError = (message, statusCode) =>
+  Object.assign(new Error(message), { statusCode });
+
+const validateOwnershipIds = (id, userId) => {
+  if (!isObjectId(userId)) {
+    throw requestError("Acesso não autorizado", 401);
+  }
+  if (!isObjectId(id)) {
+    throw requestError("ID da peça inválido", 400);
+  }
+};
+
+const hasUnsafeKeys = (value) => {
+  if (!value || typeof value !== "object") return false;
+  return Object.entries(value).some(
+    ([key, nested]) =>
+      key.startsWith("$") || key.includes(".") || hasUnsafeKeys(nested)
+  );
+};
+
+const getEditableFields = (data) => {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    Array.isArray(data) ||
+    hasUnsafeKeys(data)
+  ) {
+    throw requestError("Dados de atualização inválidos", 400);
+  }
+
+  const changes = {};
+  for (const field of ["title", "description", "media"]) {
+    if (Object.hasOwn(data, field)) changes[field] = data[field];
+  }
+  if (Object.keys(changes).length === 0) {
+    throw requestError("Nenhum campo editável informado", 400);
+  }
+  return changes;
+};
+
 class ClothingService {
   async create(data) {
     try {
@@ -49,12 +92,14 @@ class ClothingService {
     }
   }
 
-  async update(id, data) {
+  async update(id, userId, data) {
     try {
-      const clothing = await Clothing.findByIdAndUpdate(
-        id,
-        data,
-        { new: true }
+      validateOwnershipIds(id, userId);
+      const changes = getEditableFields(data);
+      const clothing = await Clothing.findOneAndUpdate(
+        { _id: id, userId },
+        { $set: changes },
+        { new: true, runValidators: true }
       );
 
       return clothing;
@@ -64,9 +109,10 @@ class ClothingService {
     }
   }
 
-  async delete(id) {
+  async delete(id, userId) {
     try {
-      const clothing = await Clothing.findByIdAndDelete(id);
+      validateOwnershipIds(id, userId);
+      const clothing = await Clothing.findOneAndDelete({ _id: id, userId });
       return clothing;
     } catch (error) {
       console.log(error);

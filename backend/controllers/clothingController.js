@@ -62,31 +62,25 @@ const updateClothing = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const clothing = await clothingService.getById(id);
+    const updated = await clothingService.update(id, req.loggerUser?.id, req.body);
 
-    if (!clothing) {
+    if (!updated) {
       return res.status(404).json({
         error: "Peça não encontrada",
       });
     }
-
-    const ownerId = clothing.userId?._id
-      ? clothing.userId._id.toString()
-      : clothing.userId.toString();
-
-    if (ownerId !== req.loggerUser.id) {
-      return res.status(403).json({
-        error: "Você não tem permissão para editar esta peça",
-      });
-    }
-
-    const updated = await clothingService.update(id, req.body);
 
     return res.status(200).json({
       message: "Peça atualizada com sucesso",
       clothing: updated,
     });
   } catch (error) {
+    if (error.statusCode === 400 || error.statusCode === 401) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+    if (error.name === "ValidationError" || error.name === "CastError") {
+      return res.status(400).json({ error: "Dados da peça inválidos" });
+    }
     console.log(error);
     return res.status(500).json({
       error: "Erro ao atualizar peça",
@@ -97,7 +91,7 @@ const updateClothing = async (req, res) => {
 const deleteClothing = async (req, res) => {
   try {
     const { id } = req.params;
-    const clothing = await clothingService.delete(id);
+    const clothing = await clothingService.delete(id, req.loggerUser?.id);
 
     if (!clothing) {
       return res.status(404).json({
@@ -109,6 +103,9 @@ const deleteClothing = async (req, res) => {
       message: "Peça removida com sucesso",
     });
   } catch (error) {
+    if (error.statusCode === 400 || error.statusCode === 401) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
     console.log(error);
     return res.status(500).json({
       error: "Não foi possível remover a peça",
