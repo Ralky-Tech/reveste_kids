@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../services/api';
 import './AddClothing.css';
+import ClothingAttributes from '../components/ClothingAttributes';
 
 function AddClothing() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ function AddClothing() {
     description: '',
     size: '',
     category: '',
+    style: '',
     media: [],
     condition: '',
   });
@@ -64,6 +66,7 @@ function AddClothing() {
         description: '',
         size: '',
         category: '',
+        style: '',
         media: [],
         condition: '',
       });
@@ -225,6 +228,8 @@ function AddClothing() {
             onChange={handleChange}
             required
           />
+
+          <ClothingAttributes values={formData} onChange={handleChange} />
 
           <textarea
             name="description"

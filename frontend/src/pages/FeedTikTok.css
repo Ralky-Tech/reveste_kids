@@ -733,9 +733,9 @@ body.dark .tiktok-action-btn,
 
   .settings-dropdown {
     position: absolute;
-    top: 50%;
-    right: 58px;
-    transform: translateY(-50%);
+    top: calc(100% + 8px);
+    right: 0;
+    transform: none;
     left: auto;
     bottom: auto;
     width: 145px;
@@ -795,4 +795,48 @@ body.dark .tiktok-action-btn,
 
 .tiktok-info-card p::-webkit-scrollbar-thumb:hover {
   background-color: #a763f5; /* leve variação no hover */
+}
+
+/* Keep all navigation actions reachable with the dedicated search entry. */
+@media (max-width: 900px) {
+  .tiktok-mobile-header-top {
+    gap: 8px;
+  }
+  .tiktok-mobile-logo {
+    width: 40px;
+  }
+  .mobile-actions {
+    gap: 4px;
+  }
+  .mobile-actions > span,
+  .mobile-actions .settings-menu-wrapper > span {
+    display: none;
+  }
+  .mobile-actions .notification-container {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-height: 700px) and (min-width: 901px) {
+  .tiktok-sidebar {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .tiktok-logo {
+    width: 38px;
+  }
+  .sidebar-actions {
+    gap: 2px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+  .sidebar-actions .tiktok-action-btn,
+  .sidebar-actions .notification-container {
+    width: 42px;
+    height: 42px;
+  }
+  .sidebar-actions .notification-container {
+    margin-bottom: 4px !important;
+  }
 }

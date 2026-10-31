@@ -4,6 +4,7 @@ import API_BASE_URL from '../services/api';
 import './FeedTikTok.css';
 import Footer from '../components/Footer';
 import NotificationBell from '../components/NotificationBell';
+import { sortClothingPieces } from '../utils/searchPieces';
 
 function FeedTikTok({ theme, toggleTheme }) {
   const [clothes, setClothes] = useState([]);
@@ -67,21 +68,23 @@ function FeedTikTok({ theme, toggleTheme }) {
   const filteredClothes = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
 
-    return clothes.filter((item) => {
-      const ownerId =
-        typeof item.userId === 'object' ? item.userId?._id : item.userId;
+    return sortClothingPieces(
+      clothes.filter((item) => {
+        const ownerId =
+          typeof item.userId === 'object' ? item.userId?._id : item.userId;
 
-      const isOwnClothing = String(ownerId) === String(user?._id);
+        const isOwnClothing = String(ownerId) === String(user?._id);
 
-      if (isOwnClothing) return false;
+        if (isOwnClothing) return false;
 
-      const title = item.title?.toLowerCase() || '';
-      const description = item.description?.toLowerCase() || '';
+        const title = item.title?.toLowerCase() || '';
+        const description = item.description?.toLowerCase() || '';
 
-      if (!search) return true;
+        if (!search) return true;
 
-      return title.includes(search) || description.includes(search);
-    });
+        return title.includes(search) || description.includes(search);
+      })
+    );
   }, [clothes, searchTerm, user]);
 
   const activeItem = useMemo(() => {
@@ -372,7 +375,7 @@ function FeedTikTok({ theme, toggleTheme }) {
                 src={theme === 'dark' ? './sun.png' : './moon.png'}
                 alt="Alternar tema"
               />
-              <span>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</span>
+              {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
             </button>
 
             <button
@@ -391,7 +394,7 @@ function FeedTikTok({ theme, toggleTheme }) {
                 }
                 alt="Sair"
               />
-              <span>Sair</span>
+              Sair
             </button>
           </div>
         )}
@@ -400,9 +403,7 @@ function FeedTikTok({ theme, toggleTheme }) {
   };
 
   const renderActionButtons = (item, isLiked, isOwnClothing, variant = '') => {
-    if (!item) return null;
-
-    const menuKey = `${variant || 'default'}-${item._id}`;
+    const menuKey = `${variant || 'default'}-${item?._id || 'navigation'}`;
 
     return (
       <div className={`tiktok-actions ${variant}`}>
@@ -461,6 +462,24 @@ function FeedTikTok({ theme, toggleTheme }) {
           />
         </button>
         <span>Buscar</span>
+
+        <button
+          type="button"
+          className="tiktok-action-btn"
+          onClick={() => navigate('/search-pieces')}
+          title="Buscar peças"
+        >
+          <img
+            src={
+              theme === 'dark'
+                ? '/search_sem_fundo.png'
+                : '/search_sem_fundo_dark.png'
+            }
+            alt="Buscar peças"
+            className="action-icon-img"
+          />
+        </button>
+        <span>Peças</span>
 
         {renderSettingsMenu(menuKey)}
       </div>

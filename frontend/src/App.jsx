@@ -14,6 +14,7 @@ import MyCloset from './pages/MyCloset';
 import AddClothing from './pages/AddClothing';
 import Matches from './pages/Matches';
 import SearchClosets from './pages/SearchClosets';
+import SearchPieces from './pages/SearchPieces';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -70,6 +71,7 @@ function App() {
           <Route path="/add-clothing" element={<AddClothing />} />
           <Route path="/matches" element={<Matches />} />
           <Route path="/search-closets" element={<SearchClosets />} />
+          <Route path="/search-pieces" element={<SearchPieces />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
