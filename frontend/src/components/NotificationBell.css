@@ -1,59 +1,26 @@
 .notification-container {
   position: relative;
-  width: 54px;
-  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  z-index: 10000;
-  margin-bottom: 28px;
+  width: 62px;
+  height: 62px;
+  overflow: visible !important;
 }
 
 .notification-btn {
-  position: relative;
-  width: 54px;
-  height: 54px;
-  padding: 0px;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.notification-icon {
-  display: block !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: static !important;
-  opacity: 1 !important;
-  transform: none !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  transition: 0.2s ease;
   font-size: 1.35rem;
-  line-height: 1;
-  pointer-events: none;
 }
 
-.notification-count {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  z-index: 10002;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: #ff2d2d;
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 22px;
-  text-align: center;
-  box-shadow: 0 0 10px rgba(255, 45, 45, 0.8);
-  pointer-events: none;
+.notification-btn-label {
+  color: var(--text-main);
+}
+
+.notification-btn:hover {
+  transform: scale(1.08);
+  border-color: #c084fc;
+  box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.12);
 }
 
 .notification-btn.has-notifications {
@@ -62,7 +29,7 @@
 }
 
 .notification-btn.has-notifications::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: -6px;
   border-radius: 50%;
@@ -73,27 +40,17 @@
 
 .notification-dropdown {
   position: absolute;
-
   left: 72px;
   top: 0;
-
   width: 320px;
   max-height: 420px;
-
   overflow-y: auto;
-
   background: rgba(15, 15, 15, 0.98);
-
   border: 1px solid rgba(192, 132, 252, 0.25);
-
   border-radius: 18px;
-
   padding: 16px;
-
   z-index: 999999;
-
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45);
-
   backdrop-filter: blur(12px);
 }
 

@@ -32,7 +32,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
 }
 
 /* BOTÃO HOME */
@@ -43,8 +42,8 @@
   height: 62px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: #111111;
+  border: 1px solid #111;
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,6 +55,7 @@
 .closet-home-btn:hover {
   transform: scale(1.08);
   border-color: #c084fc;
+  box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.12);
 }
 
 .closet-home-icon {
@@ -64,15 +64,10 @@
   object-fit: contain;
   display: block;
   transition: 0.2s ease;
-  filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.45));
 }
 
 .closet-home-btn:hover .closet-home-icon {
   transform: scale(1.1);
-}
-
-.closet-home-label {
-  color: var(--text-main);
 }
 
 /* CARD USUÁRIO */
@@ -103,7 +98,11 @@
 
 .closet-container {
   min-height: 100vh;
+  width: 100%;
   padding: 44px 48px;
+  padding-top: 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
   background:
     radial-gradient(
       circle at top center,
@@ -153,10 +152,11 @@
 /* GRID */
 
 .closet-grid {
+  width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 26px;
 }
 
@@ -566,24 +566,6 @@
   color: #111111;
   font-size: 18px;
   font-weight: bold;
-}
-
-/* BOTÃO HOME - contraste invertido por tema */
-
-body.light .closet-home-btn,
-.light .closet-home-btn,
-[data-theme="light"] .closet-home-btn {
-  background: #111111;
-  border: 1px solid rgba(192, 132, 252, 0.55);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
-}
-
-body.dark .closet-home-btn,
-.dark .closet-home-btn,
-[data-theme="dark"] .closet-home-btn {
-  background: #ffffff;
-  border: 1px solid rgba(192, 132, 252, 0.45);
-  box-shadow: 0 8px 22px rgba(255, 255, 255, 0.08);
 }
 
 /* RESPONSIVE */

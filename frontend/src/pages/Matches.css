@@ -81,6 +81,7 @@
   min-height: 100vh;
   color: var(--text-main);
   padding: 44px 48px 50px;
+  padding-top: 20px;
   background:
     radial-gradient(
       circle at top center,
@@ -431,7 +432,7 @@
 /* Tema claro → fundo preto */
 body.light .matches-home-btn,
 .light .matches-home-btn,
-[data-theme="light"] .matches-home-btn {
+[data-theme='light'] .matches-home-btn {
   background: #111111;
   border: 1px solid rgba(192, 132, 252, 0.55);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
@@ -440,7 +441,7 @@ body.light .matches-home-btn,
 /* Tema escuro → fundo branco */
 body.dark .matches-home-btn,
 .dark .matches-home-btn,
-[data-theme="dark"] .matches-home-btn {
+[data-theme='dark'] .matches-home-btn {
   background: #ffffff;
   border: 1px solid rgba(192, 132, 252, 0.45);
   box-shadow: 0 8px 22px rgba(255, 255, 255, 0.08);

@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API_BASE_URL from "../services/api";
-import "./FeedTikTok.css";
-import Footer from "../components/Footer";
-import NotificationBell from "../components/NotificationBell";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../services/api';
+import './FeedTikTok.css';
+import Footer from '../components/Footer';
+import NotificationBell from '../components/NotificationBell';
 
 function FeedTikTok({ theme, toggleTheme }) {
   const [clothes, setClothes] = useState([]);
   const [likedIds, setLikedIds] = useState([]);
   const [currentMediaIndex, setCurrentMediaIndex] = useState({});
   const [matchAlert, setMatchAlert] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeClothingId, setActiveClothingId] = useState(null);
   const [settingsMenuKey, setSettingsMenuKey] = useState(null);
   const [likeCounts, setLikeCounts] = useState({});
@@ -20,7 +20,7 @@ function FeedTikTok({ theme, toggleTheme }) {
 
   const user = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("user"));
+      return JSON.parse(localStorage.getItem('user'));
     } catch {
       return null;
     }
@@ -46,11 +46,11 @@ function FeedTikTok({ theme, toggleTheme }) {
 
         setLikeCounts(counts);
       })
-      .catch((error) => console.log("Erro ao carregar feed:", error));
+      .catch((error) => console.log('Erro ao carregar feed:', error));
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     fetch(`${API_BASE_URL}/api/my-likes`, {
@@ -61,7 +61,7 @@ function FeedTikTok({ theme, toggleTheme }) {
         const ids = data.map((item) => item.clothingId?._id || item.clothingId);
         setLikedIds(ids);
       })
-      .catch((error) => console.log("Erro ao buscar likes:", error));
+      .catch((error) => console.log('Erro ao buscar likes:', error));
   }, []);
 
   const filteredClothes = useMemo(() => {
@@ -69,14 +69,14 @@ function FeedTikTok({ theme, toggleTheme }) {
 
     return clothes.filter((item) => {
       const ownerId =
-        typeof item.userId === "object" ? item.userId?._id : item.userId;
+        typeof item.userId === 'object' ? item.userId?._id : item.userId;
 
       const isOwnClothing = String(ownerId) === String(user?._id);
 
       if (isOwnClothing) return false;
 
-      const title = item.title?.toLowerCase() || "";
-      const description = item.description?.toLowerCase() || "";
+      const title = item.title?.toLowerCase() || '';
+      const description = item.description?.toLowerCase() || '';
 
       if (!search) return true;
 
@@ -87,7 +87,7 @@ function FeedTikTok({ theme, toggleTheme }) {
   const activeItem = useMemo(() => {
     return (
       filteredClothes.find(
-        (item) => String(item._id) === String(activeClothingId),
+        (item) => String(item._id) === String(activeClothingId)
       ) ||
       filteredClothes[0] ||
       null
@@ -111,7 +111,7 @@ function FeedTikTok({ theme, toggleTheme }) {
       },
       {
         threshold: 0.55,
-      },
+      }
     );
 
     filteredClothes.forEach((item) => {
@@ -128,45 +128,45 @@ function FeedTikTok({ theme, toggleTheme }) {
   }, [filteredClothes]);
 
   const generateTags = (item) => {
-    const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
+    const text = `${item.title || ''} ${item.description || ''}`.toLowerCase();
 
     const tagRules = [
-      "jeans",
-      "camiseta",
-      "calça",
-      "bermuda",
-      "vestido",
-      "moletom",
-      "blusa",
-      "jaqueta",
-      "casaco",
-      "shorts",
-      "azul",
-      "preto",
-      "branco",
-      "rosa",
-      "vermelho",
-      "verde",
-      "amarelo",
-      "cinza",
-      "novo",
-      "nova",
-      "seminovo",
-      "seminova",
-      "usado",
-      "usada",
-      "infantil",
-      "bebê",
-      "menino",
-      "menina",
-      "tamanho p",
-      "tamanho m",
-      "tamanho g",
-      "tamanho gg",
-      "p",
-      "m",
-      "g",
-      "gg",
+      'jeans',
+      'camiseta',
+      'calça',
+      'bermuda',
+      'vestido',
+      'moletom',
+      'blusa',
+      'jaqueta',
+      'casaco',
+      'shorts',
+      'azul',
+      'preto',
+      'branco',
+      'rosa',
+      'vermelho',
+      'verde',
+      'amarelo',
+      'cinza',
+      'novo',
+      'nova',
+      'seminovo',
+      'seminova',
+      'usado',
+      'usada',
+      'infantil',
+      'bebê',
+      'menino',
+      'menina',
+      'tamanho p',
+      'tamanho m',
+      'tamanho g',
+      'tamanho gg',
+      'p',
+      'm',
+      'g',
+      'gg',
     ];
 
     const tags = tagRules.filter((tag) => text.includes(tag));
@@ -174,19 +174,19 @@ function FeedTikTok({ theme, toggleTheme }) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
   };
 
   const getAllMedia = (item) => {
     if (item?.media?.length > 0) return item.media;
 
     if (item?.images?.length > 0) {
-      return item.images.map((url) => ({ type: "image", url }));
+      return item.images.map((url) => ({ type: 'image', url }));
     }
 
-    if (item?.image) return [{ type: "image", url: item.image }];
+    if (item?.image) return [{ type: 'image', url: item.image }];
 
     return [];
   };
@@ -194,17 +194,17 @@ function FeedTikTok({ theme, toggleTheme }) {
   const getOwnerId = (item) => {
     if (!item?.userId) return null;
 
-    if (typeof item.userId === "object") {
+    if (typeof item.userId === 'object') {
       return item.userId._id;
     }
     return item.userId;
   };
 
   const getOwnerName = (item) => {
-    if (!item?.userId) return "Usuário desconhecido";
-    return typeof item.userId === "object"
-      ? item.userId.name || item.userId.email.split("@")[0]
-      : "Usuário externo";
+    if (!item?.userId) return 'Usuário desconhecido';
+    return typeof item.userId === 'object'
+      ? item.userId.name || item.userId.email.split('@')[0]
+      : 'Usuário externo';
   };
 
   const handleNextMedia = (itemId, total) => {
@@ -238,10 +238,10 @@ function FeedTikTok({ theme, toggleTheme }) {
   };
 
   const handleLike = async (clothingId) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
 
     if (!token) {
-      alert("Você precisa estar logado para curtir.");
+      alert('Você precisa estar logado para curtir.');
       return;
     }
 
@@ -249,7 +249,7 @@ function FeedTikTok({ theme, toggleTheme }) {
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/like/${clothingId}`, {
-        method: alreadyLiked ? "DELETE" : "POST",
+        method: alreadyLiked ? 'DELETE' : 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -258,7 +258,7 @@ function FeedTikTok({ theme, toggleTheme }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao atualizar like");
+        throw new Error(data.error || 'Erro ao atualizar like');
       }
 
       if (alreadyLiked) {
@@ -270,8 +270,8 @@ function FeedTikTok({ theme, toggleTheme }) {
         }));
 
         showToast(
-          "Like removido",
-          "A peça foi removida da sua lista de curtidas.",
+          'Like removido',
+          'A peça foi removida da sua lista de curtidas.'
         );
 
         return;
@@ -286,35 +286,35 @@ function FeedTikTok({ theme, toggleTheme }) {
 
       if (data.matchCreated) {
         showToast(
-          "Deu match!",
-          "Vocês demonstraram interesse em trocar peças. A conversa já está disponível em Matches.",
+          'Deu match!',
+          'Vocês demonstraram interesse em trocar peças. A conversa já está disponível em Matches.'
         );
       } else {
         showToast(
-          "Like enviado!",
-          "Se houver interesse mútuo, o match aparecerá na área de Matches.",
+          'Like enviado!',
+          'Se houver interesse mútuo, o match aparecerá na área de Matches.'
         );
       }
     } catch (error) {
       console.log(error);
-      alert("Não foi possível atualizar o like.");
+      alert('Não foi possível atualizar o like.');
     }
   };
 
   const handleShareWhatsApp = (mediaUrl, item) => {
     if (!mediaUrl) {
-      alert("Não há imagem ou vídeo para compartilhar.");
+      alert('Não há imagem ou vídeo para compartilhar.');
       return;
     }
 
-    const title = item?.title || "Peça do Reveste Kids";
+    const title = item?.title || 'Peça do Reveste Kids';
     const text = `${title}\n\nVeja essa peça no Reveste Kids:\n${mediaUrl}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
 
-    window.open(whatsappUrl, "_blank");
+    window.open(whatsappUrl, '_blank');
   };
 
-  const renderSearchBox = (variant = "") => (
+  const renderSearchBox = (variant = '') => (
     <div className={`feed-search-box ${variant}`}>
       <input
         type="text"
@@ -327,7 +327,7 @@ function FeedTikTok({ theme, toggleTheme }) {
         <button
           type="button"
           className="feed-clear-search"
-          onClick={() => setSearchTerm("")}
+          onClick={() => setSearchTerm('')}
         >
           Limpar
         </button>
@@ -348,9 +348,9 @@ function FeedTikTok({ theme, toggleTheme }) {
         >
           <img
             src={
-              theme === "dark"
-                ? "/setting_sem_fundo.png"
-                : "/setting_sem_fundo_dark.png"
+              theme === 'dark'
+                ? '/setting_sem_fundo.png'
+                : '/setting_sem_fundo_dark.png'
             }
             alt="Configurações"
             className="action-icon-img"
@@ -369,10 +369,10 @@ function FeedTikTok({ theme, toggleTheme }) {
               }}
             >
               <img
-                src={theme === "dark" ? "./sun.png" : "./moon.png"}
+                src={theme === 'dark' ? './sun.png' : './moon.png'}
                 alt="Alternar tema"
               />
-              <span>{theme === "dark" ? "Tema claro" : "Tema escuro"}</span>
+              <span>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</span>
             </button>
 
             <button
@@ -385,9 +385,9 @@ function FeedTikTok({ theme, toggleTheme }) {
             >
               <img
                 src={
-                  theme === "dark"
-                    ? "/logout_sem_fundo.png"
-                    : "/logout_sem_fundo_dark.png"
+                  theme === 'dark'
+                    ? '/logout_sem_fundo.png'
+                    : '/logout_sem_fundo_dark.png'
                 }
                 alt="Sair"
               />
@@ -399,10 +399,10 @@ function FeedTikTok({ theme, toggleTheme }) {
     );
   };
 
-  const renderActionButtons = (item, isLiked, isOwnClothing, variant = "") => {
+  const renderActionButtons = (item, isLiked, isOwnClothing, variant = '') => {
     if (!item) return null;
 
-    const menuKey = `${variant || "default"}-${item._id}`;
+    const menuKey = `${variant || 'default'}-${item._id}`;
 
     return (
       <div className={`tiktok-actions ${variant}`}>
@@ -411,14 +411,14 @@ function FeedTikTok({ theme, toggleTheme }) {
         <button
           type="button"
           className="tiktok-action-btn"
-          onClick={() => navigate("/closet")}
+          onClick={() => navigate('/closet')}
           title="Closet"
         >
           <img
             src={
-              theme === "dark"
-                ? "/closet_sem_fundo.png"
-                : "/closet_sem_fundo_dark.png"
+              theme === 'dark'
+                ? '/closet_sem_fundo.png'
+                : '/closet_sem_fundo_dark.png'
             }
             alt="Closet"
             className="action-icon-img"
@@ -429,14 +429,14 @@ function FeedTikTok({ theme, toggleTheme }) {
         <button
           type="button"
           className="tiktok-action-btn"
-          onClick={() => navigate("/matches")}
+          onClick={() => navigate('/matches')}
           title="Match"
         >
           <img
             src={
-              theme === "dark"
-                ? "/match_sem_fundo.png"
-                : "/match_sem_fundo_dark.png"
+              theme === 'dark'
+                ? '/match_sem_fundo.png'
+                : '/match_sem_fundo_dark.png'
             }
             alt="Match"
             className="action-icon-img"
@@ -447,14 +447,14 @@ function FeedTikTok({ theme, toggleTheme }) {
         <button
           type="button"
           className="tiktok-action-btn"
-          onClick={() => navigate("/search-closets")}
+          onClick={() => navigate('/search-closets')}
           title="Buscar Closets"
         >
           <img
             src={
-              theme === "dark"
-                ? "/addClothes_sem_fundo.png"
-                : "/addClothes_sem_fundo_dark.png"
+              theme === 'dark'
+                ? '/addClothes_sem_fundo.png'
+                : '/addClothes_sem_fundo_dark.png'
             }
             alt="Buscar Closets"
             className="action-icon-img"
@@ -478,9 +478,9 @@ function FeedTikTok({ theme, toggleTheme }) {
         <aside className="tiktok-sidebar compact-brand">
           <img
             src={
-              theme === "dark"
-                ? "/logo_sem_fundo.png"
-                : "/logo-dark-sem-fundo.png"
+              theme === 'dark'
+                ? '/logo_sem_fundo.png'
+                : '/logo-dark-sem-fundo.png'
             }
             alt="logo"
             className="tiktok-logo"
@@ -492,7 +492,7 @@ function FeedTikTok({ theme, toggleTheme }) {
             activeItem,
             isActiveLiked,
             isActiveOwnClothing,
-            "sidebar-actions",
+            'sidebar-actions'
           )}
         </aside>
 
@@ -500,9 +500,9 @@ function FeedTikTok({ theme, toggleTheme }) {
           <div className="tiktok-mobile-header-top">
             <img
               src={
-                theme === "dark"
-                  ? "/logo_sem_fundo.png"
-                  : "/logo-dark-sem-fundo.png"
+                theme === 'dark'
+                  ? '/logo_sem_fundo.png'
+                  : '/logo-dark-sem-fundo.png'
               }
               alt="logo"
               className="tiktok-mobile-logo"
@@ -512,11 +512,11 @@ function FeedTikTok({ theme, toggleTheme }) {
               activeItem,
               isActiveLiked,
               isActiveOwnClothing,
-              "mobile-actions",
+              'mobile-actions'
             )}
           </div>
 
-          {renderSearchBox("mobile-search")}
+          {renderSearchBox('mobile-search')}
         </div>
 
         <main className="tiktok-feed">
@@ -555,8 +555,8 @@ function FeedTikTok({ theme, toggleTheme }) {
                     <p className="tiktok-owner-text">
                       Peça de <strong>{getOwnerName(item)}</strong>
                     </p>
-                    <h2>{item.title || "Peça sem título"}</h2>
-                    <p>{item.description || "Peça disponível para troca."}</p>
+                    <h2>{item.title || 'Peça sem título'}</h2>
+                    <p>{item.description || 'Peça disponível para troca.'}</p>
                     {tags.length > 0 && (
                       <div className="tiktok-tags">
                         {tags.map((tag) => (
@@ -567,7 +567,7 @@ function FeedTikTok({ theme, toggleTheme }) {
                   </div>
 
                   <div className="tiktok-media-frame">
-                    {activeMedia?.type === "video" ? (
+                    {activeMedia?.type === 'video' ? (
                       <video
                         src={activeMedia.url}
                         className="tiktok-media"
@@ -578,7 +578,7 @@ function FeedTikTok({ theme, toggleTheme }) {
                     ) : activeMedia?.url ? (
                       <img
                         src={activeMedia.url}
-                        alt={item.title || "Peça"}
+                        alt={item.title || 'Peça'}
                         className="tiktok-media"
                       />
                     ) : (
@@ -611,7 +611,7 @@ function FeedTikTok({ theme, toggleTheme }) {
                           {mediaList.map((_, index) => (
                             <span
                               key={index}
-                              className={index === activeIndex ? "active" : ""}
+                              className={index === activeIndex ? 'active' : ''}
                             />
                           ))}
                         </div>
@@ -621,26 +621,26 @@ function FeedTikTok({ theme, toggleTheme }) {
                     <div className="media-floating-actions">
                       <button
                         type="button"
-                        className={`media-action-btn ${isLiked ? "liked" : ""}`}
+                        className={`media-action-btn ${isLiked ? 'liked' : ''}`}
                         onClick={() => handleLike(item._id)}
                         disabled={isOwnClothing}
                         title={
                           isOwnClothing
-                            ? "Você não pode curtir sua própria peça"
-                            : "Curtir"
+                            ? 'Você não pode curtir sua própria peça'
+                            : 'Curtir'
                         }
                       >
                         <img
                           src={
-                            theme === "dark"
+                            theme === 'dark'
                               ? isLiked
-                                ? "/like_sem_fundo.png"
-                                : "/deslike_sem_fundo.png"
+                                ? '/like_sem_fundo.png'
+                                : '/deslike_sem_fundo.png'
                               : isLiked
-                                ? "/like_sem_fundo_dark.png"
-                                : "/deslike_sem_fundo_dark.png"
+                                ? '/like_sem_fundo_dark.png'
+                                : '/deslike_sem_fundo_dark.png'
                           }
-                          alt={isLiked ? "Curtido" : "Curtir"}
+                          alt={isLiked ? 'Curtido' : 'Curtir'}
                           className="media-action-icon"
                         />
 
@@ -659,9 +659,9 @@ function FeedTikTok({ theme, toggleTheme }) {
                       >
                         <img
                           src={
-                            theme === "dark"
-                              ? "/share_sem_fundo.png"
-                              : "/share_sem_fundo_dark.png"
+                            theme === 'dark'
+                              ? '/share_sem_fundo.png'
+                              : '/share_sem_fundo_dark.png'
                           }
                           alt="Compartilhar"
                           className="media-action-icon"

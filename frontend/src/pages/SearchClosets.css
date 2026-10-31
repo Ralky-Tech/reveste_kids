@@ -59,6 +59,7 @@
 .search-closets-page {
   min-height: 100vh;
   padding: 44px 48px;
+  padding-top: 20px;
   background:
     radial-gradient(
       circle at top center,
