@@ -26,6 +26,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://reveste-kids-sepia.vercel.app",
+      "https://reveste-kids-6ubgm2y0l-rogerio-pupo-toledos-projects.vercel.app",
     ],
     credentials: true,
   })
