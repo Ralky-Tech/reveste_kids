@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../services/api';
 import './MyCloset.css';
 import MediaCarousel from '../components/MediaCarousel';
+import ClothingAttributes from '../components/ClothingAttributes';
 
 function MyCloset() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ function MyCloset() {
     description: '',
     size: '',
     category: '',
+    style: '',
     media: [],
     condition: '',
   });
@@ -103,6 +105,7 @@ function MyCloset() {
       description: item.description || '',
       size: item.size || '',
       category: item.category || '',
+      style: item.style || '',
       media: getPreviewMedia(item),
       condition: item.condition || '',
     });
@@ -118,6 +121,7 @@ function MyCloset() {
       description: '',
       size: '',
       category: '',
+      style: '',
       media: [],
       condition: '',
     });
@@ -400,6 +404,8 @@ function MyCloset() {
                 onChange={handleChange}
                 required
               />
+
+              <ClothingAttributes values={formData} onChange={handleChange} />
 
               <textarea
                 name="description"
