@@ -39,8 +39,12 @@ api.interceptors.response.use(
 
     if (erro?.response?.status === 401 && !ehLogin && !avisandoSessaoExpirada) {
       avisandoSessaoExpirada = true;
-      await limparSessao();
-      Alert.alert("Sessão expirada", "Faça login novamente para continuar.", [
+      const apagou = await limparSessao();
+      const mensagem = apagou
+        ? "Faça login novamente para continuar."
+        : "Faça login novamente para continuar. Não foi possível apagar todos os dados do login " +
+          "anterior neste aparelho; eles serão substituídos no próximo login.";
+      Alert.alert("Sessão expirada", mensagem, [
         {
           text: "OK",
           onPress: () => {

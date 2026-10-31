@@ -15,7 +15,7 @@ interface RoupaCardProps {
 
 export default function RoupaCard({ roupa, curtida, onCurtir, onAbrir }: RoupaCardProps) {
   const capa = capaDaRoupa(roupa);
-  const etiquetas = [roupa.category, roupa.size && `Tam. ${roupa.size}`, roupa.condition].filter(
+  const etiquetas = [roupa.category, roupa.size && `Tam. ${roupa.size}`, roupa.condition, roupa.style].filter(
     Boolean
   ) as string[];
 

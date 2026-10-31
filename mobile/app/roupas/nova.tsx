@@ -17,10 +17,11 @@ import Botao from "../../components/Botao";
 import Campo from "../../components/Campo";
 import Seletor from "../../components/Seletor";
 import { cores } from "../../constants/cores";
-import { CATEGORIAS, ESTADOS, TAMANHOS } from "../../constants/opcoes";
+import { CATEGORIAS, ESTADOS, ESTILOS, TAMANHOS } from "../../constants/opcoes";
 import { mensagemDeErro } from "../../services/api";
 import { enviarFoto, TAMANHO_MAXIMO } from "../../services/cloudinary";
 import { criarRoupa } from "../../services/roupas";
+import { tamanhoDoArquivo } from "../../utils/arquivos";
 
 const MAXIMO_FOTOS = 4;
 
@@ -38,17 +39,38 @@ export default function NovaRoupa() {
   const [categoria, setCategoria] = useState("");
   const [tamanho, setTamanho] = useState("");
   const [estado, setEstado] = useState("");
+  const [estilo, setEstilo] = useState("");
   const [fotos, setFotos] = useState<Foto[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [progresso, setProgresso] = useState("");
 
   function adicionarFotos(arquivos: ImagePicker.ImagePickerAsset[]) {
-    // Recusa fotos grandes demais antes de tentar enviar
-    const aceitas = arquivos.filter((a) => !a.fileSize || a.fileSize <= TAMANHO_MAXIMO);
-    if (aceitas.length < arquivos.length) {
-      Alert.alert("Foto muito grande", "Algumas fotos passam de 10 MB e não foram adicionadas.");
+    // Confere o tamanho de cada foto antes de aceitar.
+    // Quando o seletor não informa o tamanho, ele é lido direto do arquivo.
+    let grandes = 0;
+    let semTamanho = 0;
+    const novas: Foto[] = [];
+
+    for (const arquivo of arquivos) {
+      const tamanho = tamanhoDoArquivo(arquivo.uri, arquivo.fileSize);
+      if (tamanho === null) {
+        semTamanho++;
+      } else if (tamanho > TAMANHO_MAXIMO) {
+        grandes++;
+      } else {
+        novas.push({ uri: arquivo.uri });
+      }
     }
-    const novas = aceitas.map((a) => ({ uri: a.uri }));
+
+    if (grandes > 0) {
+      Alert.alert("Foto muito grande", `${grandes} foto(s) passam de 10 MB e não foram adicionadas.`);
+    }
+    if (semTamanho > 0) {
+      Alert.alert(
+        "Foto não adicionada",
+        `Não foi possível verificar o tamanho de ${semTamanho} foto(s). Tente escolher novamente.`
+      );
+    }
     setFotos([...fotos, ...novas].slice(0, MAXIMO_FOTOS));
   }
 
@@ -149,6 +171,7 @@ export default function NovaRoupa() {
         category: categoria,
         size: tamanho,
         condition: estado,
+        style: estilo,
         media: atualizadas.map((foto) => ({ type: "image" as const, url: foto.url! })),
       });
 
@@ -225,7 +248,8 @@ export default function NovaRoupa() {
 
         <Seletor rotulo="Categoria" valor={categoria} opcoes={CATEGORIAS} onMudar={setCategoria} />
         <Seletor rotulo="Tamanho" valor={tamanho} opcoes={TAMANHOS} onMudar={setTamanho} />
-        <Seletor rotulo="Estado" valor={estado} opcoes={ESTADOS} onMudar={setEstado} />
+        <Seletor rotulo="Condição" valor={estado} opcoes={ESTADOS} onMudar={setEstado} />
+        <Seletor rotulo="Estilo" valor={estilo} opcoes={ESTILOS} onMudar={setEstilo} />
 
         {progresso !== "" && <Text style={styles.progresso}>{progresso}</Text>}
 

@@ -42,3 +42,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# fotos enviadas para o servidor simulado
+mock-server/uploads/

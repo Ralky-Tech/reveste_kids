@@ -16,10 +16,11 @@ export interface Roupa {
   title: string;
   description: string;
   media: Midia[];
-  userId: Usuario | string;
+  userId: Usuario | string | null; // pode vir nulo se a conta do dono foi apagada
   category?: string;
   size?: string;
   condition?: string;
+  style?: string;
   likesCount?: number;
   createdAt?: string;
 }

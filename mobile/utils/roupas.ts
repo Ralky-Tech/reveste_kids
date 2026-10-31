@@ -1,20 +1,25 @@
 import { Roupa } from "../types/roupa";
 
-// Id do dono da peça (a API às vezes manda o objeto do usuário, às vezes só o id)
+// Id do dono da peça. A API pode mandar o objeto do usuário, só o id,
+// ou nulo (quando a conta do dono foi apagada).
 export function idDoDono(roupa: Roupa): string {
-  return typeof roupa.userId === "object" ? roupa.userId._id : roupa.userId;
+  const dono = roupa?.userId;
+  if (!dono) return "";
+  if (typeof dono === "string") return dono;
+  return dono._id || "";
 }
 
 export function nomeDoDono(roupa: Roupa): string {
-  if (typeof roupa.userId === "object") {
-    return roupa.userId.name || roupa.userId.email || "Usuário";
+  const dono = roupa?.userId;
+  if (dono && typeof dono === "object") {
+    return dono.name || dono.email || "Usuário";
   }
   return "Usuário";
 }
 
 // Primeira imagem da peça. Para vídeo, o Cloudinary gera uma miniatura trocando a extensão por .jpg
 export function capaDaRoupa(roupa: Roupa): string | null {
-  const primeira = roupa.media?.[0];
+  const primeira = roupa?.media?.[0];
   if (!primeira) return null;
   return primeira.type === "video" ? primeira.url.replace(/\.[^./]+$/, ".jpg") : primeira.url;
 }

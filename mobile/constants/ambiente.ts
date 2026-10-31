@@ -6,11 +6,15 @@
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const CLOUDINARY_CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+// Opcional: endereço do serviço de upload. Padrão: o Cloudinary real.
+// Nos testes, aponta para o servidor simulado (mock-server).
+const CLOUDINARY_API_URL = process.env.EXPO_PUBLIC_CLOUDINARY_API_URL;
 
 export const ambiente = {
   apiUrl: API_URL?.replace(/\/+$/, "") || "",
   cloudinaryCloudName: CLOUDINARY_CLOUD_NAME || "",
   cloudinaryUploadPreset: CLOUDINARY_UPLOAD_PRESET || "",
+  cloudinaryApiUrl: CLOUDINARY_API_URL?.replace(/\/+$/, "") || "https://api.cloudinary.com",
 };
 
 // Lista as variáveis que estão faltando, para mostrar um aviso claro na tela

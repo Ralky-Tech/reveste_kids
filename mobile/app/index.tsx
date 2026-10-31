@@ -6,7 +6,7 @@ import Botao from "../components/Botao";
 import { variaveisFaltando } from "../constants/ambiente";
 import { cores } from "../constants/cores";
 import { Sessao } from "../types/roupa";
-import { carregarSessao } from "../utils/armazenamento";
+import { carregarSessao, PLATAFORMA_SUPORTADA } from "../utils/armazenamento";
 
 // Tela de boas-vindas (Aulas 03 a 07)
 export default function Home() {
@@ -49,7 +49,11 @@ export default function Home() {
           </Text>
         )}
 
-        {faltando.length > 0 ? (
+        {!PLATAFORMA_SUPORTADA ? (
+          <Text style={styles.erro}>
+            Este aplicativo funciona apenas no Android e no iOS. Abra pelo Expo Go no celular.
+          </Text>
+        ) : faltando.length > 0 ? (
           <Text style={styles.erro}>
             Configuração incompleta. Crie o arquivo .env a partir do .env.example e preencha:{"\n"}
             {faltando.join("\n")}

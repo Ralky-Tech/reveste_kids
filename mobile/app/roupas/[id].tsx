@@ -101,7 +101,7 @@ export default function DetalhesRoupa() {
   const fotos = roupa.media.map((m) =>
     m.type === "video" ? m.url.replace(/\.[^./]+$/, ".jpg") : m.url
   );
-  const etiquetas = [roupa.category, roupa.size && `Tam. ${roupa.size}`, roupa.condition].filter(
+  const etiquetas = [roupa.category, roupa.size && `Tam. ${roupa.size}`, roupa.condition, roupa.style].filter(
     Boolean
   ) as string[];
 

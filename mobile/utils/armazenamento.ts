@@ -1,6 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { Sessao } from "../types/roupa";
+
+// O app é somente Android e iOS: o SecureStore não existe no navegador.
+export const PLATAFORMA_SUPORTADA = Platform.OS === "android" || Platform.OS === "ios";
 
 // Onde cada informação da sessão fica guardada:
 // - token JWT: SecureStore (armazenamento criptografado do sistema)
@@ -12,6 +16,9 @@ type Perfil = Omit<Sessao, "token">;
 
 // Salva a sessão. Lança erro se não conseguir, para a tela avisar a pessoa.
 export async function salvarSessao(sessao: Sessao): Promise<void> {
+  if (!PLATAFORMA_SUPORTADA) {
+    throw new Error("O ReVeste Kids mobile funciona apenas no Android e no iOS.");
+  }
   const { token, ...perfil } = sessao;
   try {
     await SecureStore.setItemAsync(CHAVE_TOKEN, token);
@@ -26,6 +33,7 @@ export async function salvarSessao(sessao: Sessao): Promise<void> {
 
 // Devolve a sessão salva, ou null se não houver, se estiver incompleta ou se o token expirou
 export async function carregarSessao(): Promise<Sessao | null> {
+  if (!PLATAFORMA_SUPORTADA) return null;
   try {
     const [token, dadosPerfil] = await Promise.all([
       SecureStore.getItemAsync(CHAVE_TOKEN),
@@ -53,6 +61,7 @@ export async function carregarSessao(): Promise<Sessao | null> {
 
 // Apaga a sessão. Devolve false se alguma parte não pôde ser apagada.
 export async function limparSessao(): Promise<boolean> {
+  if (!PLATAFORMA_SUPORTADA) return true;
   const resultados = await Promise.allSettled([
     SecureStore.deleteItemAsync(CHAVE_TOKEN),
     AsyncStorage.removeItem(CHAVE_PERFIL),
