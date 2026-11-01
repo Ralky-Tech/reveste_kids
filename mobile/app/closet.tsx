@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import Botao from "../components/Botao";
 import { cores } from "../constants/cores";
-import { mensagemDeErro } from "../services/api";
+import { mensagemDeErro, sessaoExpirada } from "../services/api";
 import { excluirRoupa, listarMinhasRoupas } from "../services/roupas";
 import { Roupa } from "../types/roupa";
 import { capaDaRoupa } from "../utils/roupas";
@@ -41,14 +41,18 @@ export default function Closet() {
   const [secoes, setSecoes] = useState<Secao[]>([]);
   const [total, setTotal] = useState(0);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
 
   async function carregar() {
     try {
+      setErro("");
       const roupas = await listarMinhasRoupas();
       setSecoes(agruparPorCategoria(roupas));
       setTotal(roupas.length);
     } catch (e) {
-      Alert.alert("Ops", mensagemDeErro(e));
+      // Mostra o erro na própria tela, em vez de dizer que o closet está vazio
+      setSecoes([]);
+      setErro(mensagemDeErro(e));
     } finally {
       setCarregando(false);
     }
@@ -57,7 +61,7 @@ export default function Closet() {
   useFocusEffect(
     useCallback(() => {
       carregar();
-    }, [])
+    }, []),
   );
 
   function confirmarExclusao(roupa: Roupa) {
@@ -71,7 +75,7 @@ export default function Closet() {
             await excluirRoupa(roupa._id);
             carregar();
           } catch (e) {
-            Alert.alert("Ops", mensagemDeErro(e));
+            if (!sessaoExpirada(e)) Alert.alert("Ops", mensagemDeErro(e));
           }
         },
       },
@@ -93,10 +97,12 @@ export default function Closet() {
       contentContainerStyle={styles.lista}
       stickySectionHeadersEnabled={false}
       ListHeaderComponent={
-        <Text style={styles.resumo}>
-          {total} {total === 1 ? "peça cadastrada" : "peças cadastradas"} · segure uma peça para
-          excluir
-        </Text>
+        erro ? null : (
+          <Text style={styles.resumo}>
+            {total} {total === 1 ? "peça cadastrada" : "peças cadastradas"} · segure uma peça para
+            excluir
+          </Text>
+        )
       }
       renderSectionHeader={({ section }) => (
         <Text style={styles.cabecalho}>
@@ -135,11 +141,27 @@ export default function Closet() {
         );
       }}
       ListEmptyComponent={
-        <View style={styles.vazio}>
-          <Ionicons name="shirt-outline" size={56} color={cores.textoSuave} />
-          <Text style={styles.textoVazio}>Seu closet está vazio.</Text>
-          <Botao texto="Cadastrar a primeira peça" onPress={() => router.push("/roupas/nova")} />
-        </View>
+        erro ? (
+          <View style={styles.vazio}>
+            <Ionicons name="cloud-offline-outline" size={56} color={cores.textoSuave} />
+            <Text style={styles.textoVazio}>{erro}</Text>
+            {!erro.includes("sessão expirou") && (
+              <Botao
+                texto="Tentar novamente"
+                onPress={() => {
+                  setCarregando(true);
+                  carregar();
+                }}
+              />
+            )}
+          </View>
+        ) : (
+          <View style={styles.vazio}>
+            <Ionicons name="shirt-outline" size={56} color={cores.textoSuave} />
+            <Text style={styles.textoVazio}>Seu closet está vazio.</Text>
+            <Botao texto="Cadastrar a primeira peça" onPress={() => router.push("/roupas/nova")} />
+          </View>
+        )
       }
     />
   );
@@ -214,5 +236,6 @@ const styles = StyleSheet.create({
   textoVazio: {
     fontSize: 16,
     color: cores.texto,
+    textAlign: "center",
   },
 });

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import RoupaCard from "../components/RoupaCard";
 import { cores } from "../constants/cores";
-import { mensagemDeErro } from "../services/api";
+import { mensagemDeErro, sessaoExpirada } from "../services/api";
 import { curtir, descurtir, listarMinhasCurtidas } from "../services/curtidas";
 import { listarRoupas } from "../services/roupas";
 import { Roupa } from "../types/roupa";
@@ -54,7 +54,7 @@ export default function Feed() {
   useFocusEffect(
     useCallback(() => {
       carregarFeed();
-    }, [])
+    }, []),
   );
 
   async function alternarCurtida(roupa: Roupa) {
@@ -80,11 +80,11 @@ export default function Feed() {
         roupas.map((r) =>
           r._id === roupa._id
             ? { ...r, likesCount: Math.max((r.likesCount || 0) + (jaCurtiu ? -1 : 1), 0) }
-            : r
-        )
+            : r,
+        ),
       );
     } catch (e) {
-      Alert.alert("Ops", mensagemDeErro(e));
+      if (!sessaoExpirada(e)) Alert.alert("Ops", mensagemDeErro(e));
     }
   }
 
@@ -95,9 +95,15 @@ export default function Feed() {
         options={{
           headerRight: () => (
             <View style={styles.acoes}>
-              <IconeCabecalho icone="add-circle-outline" onPress={() => router.push("/roupas/nova")} />
+              <IconeCabecalho
+                icone="add-circle-outline"
+                onPress={() => router.push("/roupas/nova")}
+              />
               <IconeCabecalho icone="shirt-outline" onPress={() => router.push("/closet")} />
-              <IconeCabecalho icone="person-circle-outline" onPress={() => router.push("/perfil")} />
+              <IconeCabecalho
+                icone="person-circle-outline"
+                onPress={() => router.push("/perfil")}
+              />
             </View>
           ),
         }}
@@ -148,7 +154,11 @@ export default function Feed() {
 
 function IconeCabecalho({ icone, onPress }: { icone: any; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} hitSlop={8} style={({ pressed }) => [{ marginLeft: 14 }, pressed && { opacity: 0.5 }]}>
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      style={({ pressed }) => [{ marginLeft: 14 }, pressed && { opacity: 0.5 }]}
+    >
       <Ionicons name={icone} size={27} color={cores.primariaEscura} />
     </Pressable>
   );

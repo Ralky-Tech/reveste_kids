@@ -372,10 +372,14 @@ const servidor = http.createServer(async (req, res) => {
 });
 
 servidor.listen(PORTA, "0.0.0.0", () => {
+  // Mostra primeiro os IPs de rede local (Wi-Fi ou cabo), que o celular consegue alcançar.
+  // Adaptadores virtuais (VPN, módulos de segurança de banco) podem ter outros endereços.
+  const ehRedeLocal = (ip) => /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
   const ips = Object.values(os.networkInterfaces())
     .flat()
-    .filter((i) => i && i.family === "IPv4" && !i.internal)
-    .map((i) => i.address);
+    .filter((i) => i && i.family === "IPv4" && !i.internal && !i.address.startsWith("169.254."))
+    .map((i) => i.address)
+    .sort((a, b) => Number(ehRedeLocal(b)) - Number(ehRedeLocal(a)));
   const ip = ips[0] || "SEU-IP";
 
   console.log("\nServidor simulado do ReVeste Kids rodando.");

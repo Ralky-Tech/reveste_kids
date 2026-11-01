@@ -15,7 +15,7 @@ import {
 import Botao from "../../components/Botao";
 import Etiqueta from "../../components/Etiqueta";
 import { cores } from "../../constants/cores";
-import { mensagemDeErro } from "../../services/api";
+import { mensagemDeErro, sessaoExpirada } from "../../services/api";
 import { curtir, descurtir, listarMinhasCurtidas } from "../../services/curtidas";
 import { buscarRoupa, excluirRoupa } from "../../services/roupas";
 import { Roupa } from "../../types/roupa";
@@ -44,6 +44,8 @@ export default function DetalhesRoupa() {
         setCurtida(curtidas.includes(dados._id));
         setMinha(idDoDono(dados) === sessao?.id);
       } catch (e) {
+        // Na sessão expirada, o aviso e a volta ao login já são feitos pelo interceptor
+        if (sessaoExpirada(e)) return;
         Alert.alert("Ops", mensagemDeErro(e));
         router.back();
       } finally {
@@ -67,7 +69,7 @@ export default function DetalhesRoupa() {
       setRoupa({ ...roupa, likesCount: Math.max((roupa.likesCount || 0) + (curtida ? -1 : 1), 0) });
       setCurtida(!curtida);
     } catch (e) {
-      Alert.alert("Ops", mensagemDeErro(e));
+      if (!sessaoExpirada(e)) Alert.alert("Ops", mensagemDeErro(e));
     }
   }
 
@@ -82,7 +84,7 @@ export default function DetalhesRoupa() {
             await excluirRoupa(id);
             router.back();
           } catch (e) {
-            Alert.alert("Ops", mensagemDeErro(e));
+            if (!sessaoExpirada(e)) Alert.alert("Ops", mensagemDeErro(e));
           }
         },
       },
@@ -99,11 +101,14 @@ export default function DetalhesRoupa() {
 
   // Só as fotos (vídeos aparecem pela miniatura)
   const fotos = roupa.media.map((m) =>
-    m.type === "video" ? m.url.replace(/\.[^./]+$/, ".jpg") : m.url
+    m.type === "video" ? m.url.replace(/\.[^./]+$/, ".jpg") : m.url,
   );
-  const etiquetas = [roupa.category, roupa.size && `Tam. ${roupa.size}`, roupa.condition, roupa.style].filter(
-    Boolean
-  ) as string[];
+  const etiquetas = [
+    roupa.category,
+    roupa.size && `Tam. ${roupa.size}`,
+    roupa.condition,
+    roupa.style,
+  ].filter(Boolean) as string[];
 
   return (
     <ScrollView>

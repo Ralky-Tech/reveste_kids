@@ -1,9 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { cores } from "../constants/cores";
-import { mensagemDeErro } from "../services/api";
+import { mensagemDeErro, sessaoExpirada } from "../services/api";
 import { listarMatches } from "../services/curtidas";
 import { Match, Roupa } from "../types/roupa";
 import { capaDaRoupa } from "../utils/roupas";
@@ -18,7 +27,7 @@ export default function Matches() {
       try {
         setMatches(await listarMatches());
       } catch (e) {
-        Alert.alert("Ops", mensagemDeErro(e));
+        if (!sessaoExpirada(e)) Alert.alert("Ops", mensagemDeErro(e));
       } finally {
         setCarregando(false);
       }

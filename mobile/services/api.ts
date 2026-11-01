@@ -19,9 +19,7 @@ const api = axios.create({
 // Antes de cada requisição: confere a configuração e coloca o token salvo
 api.interceptors.request.use(async (config) => {
   if (!ambiente.apiUrl) {
-    throw new Error(
-      "O endereço da API não está configurado. Confira o arquivo .env.",
-    );
+    throw new Error("O endereço da API não está configurado. Confira o arquivo .env.");
   }
   const sessao = await carregarSessao();
   if (sessao?.token) {
@@ -30,16 +28,22 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Diz se o erro é de sessão expirada: resposta 401 fora das rotas de login e cadastro.
+// Nesse caso o interceptor abaixo já avisa e leva para o login, então as telas
+// não precisam mostrar um aviso próprio.
+export function sessaoExpirada(erro: any): boolean {
+  const rota: string = erro?.config?.url || "";
+  const ehLogin = rota === "/auth" || rota === "/user";
+  return erro?.response?.status === 401 && !ehLogin;
+}
+
 // Se o servidor recusar o token (expirado ou inválido), encerra a sessão
 let avisandoSessaoExpirada = false;
 
 api.interceptors.response.use(
   (resposta) => resposta,
   async (erro) => {
-    const rota: string = erro?.config?.url || "";
-    const ehLogin = rota === "/auth" || rota === "/user";
-
-    if (erro?.response?.status === 401 && !ehLogin && !avisandoSessaoExpirada) {
+    if (sessaoExpirada(erro) && !avisandoSessaoExpirada) {
       avisandoSessaoExpirada = true;
       const apagou = await limparSessao();
       const mensagem = apagou
@@ -67,14 +71,10 @@ export function mensagemDeErro(erro: any): string {
     return "O servidor demorou para responder. Tente de novo em instantes.";
   }
   if (erro?.response) {
-    const rota: string = erro.config?.url || "";
-    const ehLogin = rota === "/auth" || rota === "/user";
-    if (erro.response.status === 401 && !ehLogin) {
+    if (sessaoExpirada(erro)) {
       return "Sua sessão expirou. Faça login novamente.";
     }
-    return (
-      erro.response.data?.error || `Erro no servidor (${erro.response.status}).`
-    );
+    return erro.response.data?.error || `Erro no servidor (${erro.response.status}).`;
   }
   if (erro?.isAxiosError) {
     return "Sem conexão com o servidor. Verifique sua internet.";

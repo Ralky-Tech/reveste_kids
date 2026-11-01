@@ -18,7 +18,7 @@ import Campo from "../../components/Campo";
 import Seletor from "../../components/Seletor";
 import { cores } from "../../constants/cores";
 import { CATEGORIAS, ESTADOS, ESTILOS, TAMANHOS } from "../../constants/opcoes";
-import { mensagemDeErro } from "../../services/api";
+import { mensagemDeErro, sessaoExpirada } from "../../services/api";
 import { enviarFoto, TAMANHO_MAXIMO } from "../../services/cloudinary";
 import { criarRoupa } from "../../services/roupas";
 import { tamanhoDoArquivo } from "../../utils/arquivos";
@@ -63,12 +63,15 @@ export default function NovaRoupa() {
     }
 
     if (grandes > 0) {
-      Alert.alert("Foto muito grande", `${grandes} foto(s) passam de 10 MB e não foram adicionadas.`);
+      Alert.alert(
+        "Foto muito grande",
+        `${grandes} foto(s) passam de 10 MB e não foram adicionadas.`,
+      );
     }
     if (semTamanho > 0) {
       Alert.alert(
         "Foto não adicionada",
-        `Não foi possível verificar o tamanho de ${semTamanho} foto(s). Tente escolher novamente.`
+        `Não foi possível verificar o tamanho de ${semTamanho} foto(s). Tente escolher novamente.`,
       );
     }
     setFotos([...fotos, ...novas].slice(0, MAXIMO_FOTOS));
@@ -156,7 +159,7 @@ export default function NovaRoupa() {
         setProgresso("");
         Alert.alert(
           `Falha ao enviar a foto ${i + 1}`,
-          `${mensagemDeErro(e)}\n\nAs fotos que já foram enviadas não serão enviadas de novo. Toque em "Cadastrar peça" para tentar outra vez, ou remova essa foto.`
+          `${mensagemDeErro(e)}\n\nAs fotos que já foram enviadas não serão enviadas de novo. Toque em "Cadastrar peça" para tentar outra vez, ou remova essa foto.`,
         );
         return;
       }
@@ -178,9 +181,10 @@ export default function NovaRoupa() {
       Alert.alert("Pronto!", "Peça cadastrada com sucesso.");
       router.back();
     } catch (e) {
+      if (sessaoExpirada(e)) return;
       Alert.alert(
         "Não foi possível salvar a peça",
-        `${mensagemDeErro(e)}\n\nAs fotos já foram enviadas. Toque em "Cadastrar peça" para tentar salvar de novo.`
+        `${mensagemDeErro(e)}\n\nAs fotos já foram enviadas. Toque em "Cadastrar peça" para tentar salvar de novo.`,
       );
     } finally {
       setEnviando(false);
