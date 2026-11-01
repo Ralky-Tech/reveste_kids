@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import http from "http";
+import dns from "node:dns";
 
 import swaggerSpec from "./swagger.js";
 import { initSocket } from "./socket.js";
@@ -15,6 +16,14 @@ import chatRoutes from "./routes/chatRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
+
+if (
+  process.env.npm_lifecycle_event === "dev" &&
+  process.env.NODE_ENV !== "production" &&
+  process.env.BACKEND_DEV_DNS
+) {
+  dns.setServers([process.env.BACKEND_DEV_DNS]);
+}
 
 const app = express();
 const server = http.createServer(app);
