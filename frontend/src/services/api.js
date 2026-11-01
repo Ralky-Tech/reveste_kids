@@ -28,4 +28,11 @@ export async function loginUser(email, password) {
   });
 }
 
+export async function loginGoogle(idToken) {
+  return fetchData('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ idToken }),
+  });
+}
+
 export default API_BASE_URL;

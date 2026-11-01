@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { loginUser } from '../services/api';
+import { loginUser, loginGoogle } from '../services/api';
+import { GoogleLogin } from '@react-oauth/google';
 import './AuthPanel.css';
 
 function AuthPanel({ onAuthSuccess }) {
@@ -19,6 +20,36 @@ function AuthPanel({ onAuthSuccess }) {
     setError('');
   };
 
+  const storeSession = (token) => {
+    const segment = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = segment.padEnd(Math.ceil(segment.length / 4) * 4, '=');
+    const bytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes));
+    if (!payload.id || !payload.email || !payload.role) {
+      throw new Error('Sessão inválida.');
+    }
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', payload.role);
+    localStorage.setItem('user', JSON.stringify({ _id: payload.id, email: payload.email, role: payload.role }));
+    setMessage('Login realizado com sucesso.');
+    setTimeout(() => onAuthSuccess(), 700);
+  };
+
+  const handleGoogleSuccess = async ({ credential }) => {
+    if (loading) return;
+    resetMessages();
+    setLoading(true);
+    try {
+      if (!credential) throw new Error('ID Token do Google não recebido.');
+      const data = await loginGoogle(credential);
+      storeSession(data.token);
+    } catch (err) {
+      setError(err.message || 'Falha no login com Google.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -28,26 +59,7 @@ function AuthPanel({ onAuthSuccess }) {
     try {
       const data = await loginUser(email, password);
 
-      localStorage.setItem('token', data.token);
-
-      const payload = JSON.parse(atob(data.token.split('.')[1]));
-
-      localStorage.setItem('role', payload.role);
-
-      localStorage.setItem(
-        'user',
-        JSON.stringify({
-          _id: payload.id,
-          email: payload.email,
-          role: payload.role,
-        })
-      );
-
-      setMessage('Login realizado com sucesso.');
-
-      setTimeout(() => {
-        onAuthSuccess();
-      }, 700);
+      storeSession(data.token);
     } catch (err) {
       setError(err.message || 'Ocorreu um erro na autenticação.');
     } finally {
@@ -120,13 +132,13 @@ function AuthPanel({ onAuthSuccess }) {
 
             {error && <p className="auth-message error">{error}</p>}
 
-            <button type="button" className="google-btn">
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
+            {import.meta.env.VITE_GOOGLE_CLIENT_ID && !loading && (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Não foi possível autenticar com o Google.')}
+                auto_select={false}
               />
-              Entrar com o Google
-            </button>
+            )}
 
             <div className="auth-toggle">
               <Link to="/register" className="toggle-btn">

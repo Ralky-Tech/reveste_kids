@@ -34,18 +34,24 @@ const realFiles = new Set([
   "../routes/userRoutes.js", "../controllers/userController.js", "../services/userService.js",
 ].map(file => new URL(file, import.meta.url).href));
 const modelUrl = new URL("../models/Users.js", import.meta.url).href;
+const googleUrl = new URL("../controllers/googleAuthController.js", import.meta.url).href;
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
     if (["express", "dotenv", "bcrypt", "jsonwebtoken"].includes(specifier)) {
       return { url: "registration-test:" + (specifier === "jsonwebtoken" ? "jwt" : specifier), shortCircuit: true };
     }
     const url = new URL(specifier, context.parentURL).href;
+    if (url === googleUrl) return { url: "registration-test:google", shortCircuit: true };
     if (url === modelUrl) return { url: "registration-test:User", shortCircuit: true };
     if (realFiles.has(url)) return nextResolve(specifier, context);
     throw new Error("Unexpected import blocked: " + specifier);
   },
   load(url, context, nextLoad) {
     if (url.startsWith("registration-test:")) {
+      if (url === "registration-test:google") {
+        return { format: "module", shortCircuit: true,
+          source: 'export function googleLogin() { throw new Error("Google login is outside registration tests"); }' };
+      }
       return {
         format: "module", shortCircuit: true,
         source: 'export default globalThis[Symbol.for("reveste.public-registration-role.tests")][' + JSON.stringify(url.slice("registration-test:".length)) + '];',
