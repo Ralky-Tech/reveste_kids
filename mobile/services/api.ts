@@ -19,7 +19,9 @@ const api = axios.create({
 // Antes de cada requisição: confere a configuração e coloca o token salvo
 api.interceptors.request.use(async (config) => {
   if (!ambiente.apiUrl) {
-    throw new Error("O endereço da API não está configurado. Confira o arquivo .env.");
+    throw new Error(
+      "O endereço da API não está configurado. Confira o arquivo .env.",
+    );
   }
   const sessao = await carregarSessao();
   if (sessao?.token) {
@@ -56,7 +58,7 @@ api.interceptors.response.use(
       ]);
     }
     return Promise.reject(erro);
-  }
+  },
 );
 
 // Transforma qualquer erro numa mensagem amigável para mostrar no Alert
@@ -65,10 +67,14 @@ export function mensagemDeErro(erro: any): string {
     return "O servidor demorou para responder. Tente de novo em instantes.";
   }
   if (erro?.response) {
-    if (erro.response.status === 401) {
+    const rota: string = erro.config?.url || "";
+    const ehLogin = rota === "/auth" || rota === "/user";
+    if (erro.response.status === 401 && !ehLogin) {
       return "Sua sessão expirou. Faça login novamente.";
     }
-    return erro.response.data?.error || `Erro no servidor (${erro.response.status}).`;
+    return (
+      erro.response.data?.error || `Erro no servidor (${erro.response.status}).`
+    );
   }
   if (erro?.isAxiosError) {
     return "Sem conexão com o servidor. Verifique sua internet.";
