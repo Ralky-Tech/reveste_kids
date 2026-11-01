@@ -18,14 +18,14 @@ const JWTSecret = process.env.JWTSECRET;
 const createUser = async (req, res) => {
   try {
     //coletando os dados
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // Gerando o hash de senha
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
 
     // enviando para cadastrar
-    await userService.Create(name, email, hash, role);
+    await userService.Create(name, email, hash, "user");
 
     // Retorno da resposta
     res.status(201).json({ message: "Usuário cadastrado com sucesso" });
