@@ -1,6 +1,5 @@
+import mongoose from "./config/mongoose.js";
 import express from "express";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import http from "http";
@@ -14,8 +13,6 @@ import clothingRoutes from "./routes/clothingRoutes.js";
 import interestRoutes from "./routes/interestRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
-
-dotenv.config();
 
 if (
   process.env.npm_lifecycle_event === "dev" &&
