@@ -8,6 +8,7 @@ import {
   Outlet,
 } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Menu from './components/Menu';
 import FeedTikTok from './pages/FeedTikTok';
 import MyCloset from './pages/MyCloset';
@@ -58,6 +59,7 @@ function LayoutWithTheme() {
 
 function App() {
   return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
     <BrowserRouter>
       <Routes>
         <Route element={<LayoutWithTheme />}>
@@ -77,6 +79,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </GoogleOAuthProvider>
   );
 }
 
