@@ -26,7 +26,7 @@ const swaggerSpec = {
   },
   servers: [
     {
-      url: "http://localhost:4000",
+      url: process.env.SWAGGER_SERVER_URL || "http://localhost:4000",
       description: "Servidor local",
     },
   ],

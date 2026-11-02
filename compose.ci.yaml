@@ -1,0 +1,10 @@
+# Offline integration smoke test: never starts the application or connects to Atlas.
+services:
+  backend:
+    command: ["node", "tests/docker-backend.mjs"]
+    restart: "no"
+    volumes:
+      - ./tests/docker/backend.mjs:/app/tests/docker-backend.mjs:ro
+      - ./tests/docker/verify.mjs:/app/tests/docker-verify.mjs:ro
+  frontend:
+    restart: "no"

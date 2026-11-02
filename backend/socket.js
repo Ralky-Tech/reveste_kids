@@ -1,15 +1,12 @@
 import { Server } from "socket.io";
+import { allowedOrigins } from "./config/cors.js";
 
 let io;
 
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: [
-        "http://localhost:5173",
-        "https://reveste-kids-sepia.vercel.app",
-        "https://reveste-kids-6ubgm2y0l-rogerio-pupo-toledos-projects.vercel.app",
-      ],
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
     },
   });

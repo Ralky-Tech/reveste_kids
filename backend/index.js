@@ -4,6 +4,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import http from "http";
 import dns from "node:dns";
+import { allowedOrigins } from "./config/cors.js";
 
 import swaggerSpec from "./swagger.js";
 import { initSocket } from "./socket.js";
@@ -29,14 +30,16 @@ const port = process.env.PORT || 4000;
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://reveste-kids-sepia.vercel.app",
-      "https://reveste-kids-6ubgm2y0l-rogerio-pupo-toledos-projects.vercel.app",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
+
+app.get("/health", (_req, res) => {
+  res.status(mongoose.connection.readyState === 1 ? 200 : 503).json({
+    status: mongoose.connection.readyState === 1 ? "ok" : "unavailable",
+  });
+});
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

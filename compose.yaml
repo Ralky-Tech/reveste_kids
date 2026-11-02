@@ -1,0 +1,44 @@
+name: reveste-kids
+
+services:
+  backend:
+    image: reveste-kids/backend:local
+    build:
+      context: ./backend
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      MONGODB_URI: ${MONGODB_URI:?Configure MONGODB_URI locally}
+      JWTSECRET: ${JWTSECRET:?Configure JWTSECRET locally}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      CORS_ORIGINS: ${FRONTEND_ORIGIN:-http://localhost:${FRONTEND_PORT:-8080}}
+      SWAGGER_SERVER_URL: ${SWAGGER_SERVER_URL:-http://localhost:${BACKEND_PORT:-4001}}
+      DOCKER_DNS_SERVER: ${DOCKER_DNS_SERVER:-}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-4001}:4000"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  frontend:
+    image: reveste-kids/frontend:local
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /backend
+        VITE_SOCKET_URL: /
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
