@@ -427,24 +427,83 @@ npm install
 
 # Configuração de ambiente
 
-Crie um arquivo `.env` no backend:
+Os exemplos abaixo não contêm credenciais reais. Preencha os valores privados
+somente nos arquivos locais e nunca versione arquivos `.env`. Preserve qualquer
+arquivo existente; acrescente ou ajuste apenas as variáveis necessárias.
+
+## A) Backend local (Node.js / npm)
+
+Configure `backend/.env`. O backend carrega o arquivo com `dotenv` ao iniciar
+no diretório `backend`, inclusive pelo comando `npm run dev` da raiz.
 
 ```env
 PORT=4000
+MONGODB_URI=
+JWTSECRET=
+GOOGLE_CLIENT_ID=
 
-MONGO_URI=sua_string_mongodb
-
-JWT_SECRET=sua_chave_jwt
-
-CLOUDINARY_CLOUD_NAME=seu_cloud_name
-CLOUDINARY_API_KEY=sua_api_key
-CLOUDINARY_API_SECRET=sua_api_secret
-
-EMAIL_USER=seu_email
-EMAIL_PASS=sua_senha
-
-FRONTEND_URL=http://localhost:5173
+# SMTP opcional: preencher para habilitar o envio de e-mails
+EMAIL_HOST=
+EMAIL_PORT=587
+EMAIL_USER=
+EMAIL_PASS=
+EMAIL_FROM=
 ```
+
+`MONGODB_URI` deve receber a URI do MongoDB Atlas autorizado para a equipe, e
+`JWTSECRET`, o segredo de assinatura das sessões. Ambos precisam ser preenchidos.
+`GOOGLE_CLIENT_ID` é opcional: informe o Client ID público do cliente OAuth web
+quando utilizar login Google. O backend não utiliza Client Secret nesse fluxo.
+
+As variáveis SMTP são opcionais para uso da aplicação; sem uma configuração
+válida, a entrega de e-mails não será concluída. Elas correspondem ao servidor
+(`EMAIL_HOST`), porta (`EMAIL_PORT`), usuário (`EMAIL_USER`), senha (`EMAIL_PASS`)
+e remetente (`EMAIL_FROM`).
+
+## B) Frontend local (Vite / npm)
+
+Configure `frontend/.env` para acessar o backend local na porta 4000:
+
+```env
+VITE_API_URL=http://localhost:4000
+VITE_SOCKET_URL=http://localhost:4000
+VITE_GOOGLE_CLIENT_ID=
+```
+
+Para login Google, preencha `VITE_GOOGLE_CLIENT_ID` com o mesmo Client ID público
+de `GOOGLE_CLIENT_ID` no backend. As variáveis `VITE_*` ficam acessíveis ao
+navegador; nunca coloque senhas, tokens privados ou segredos nelas. Reinicie o
+Vite após alterar o arquivo; em builds, os valores são incorporados na compilação.
+
+## C) Docker Compose
+
+Use o arquivo `.env` **na raiz do repositório**, criado a partir de `.env.example`.
+No PowerShell, copie somente se o arquivo ainda não existir:
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+Preencha `MONGODB_URI` e `JWTSECRET`, obrigatórios para o Compose.
+`GOOGLE_CLIENT_ID` é opcional e fornece o mesmo Client ID público ao backend e
+ao build do frontend. As variáveis SMTP também são opcionais e estão descritas
+no arquivo de exemplo.
+
+Na raiz do repositório, execute:
+
+```powershell
+docker compose up -d --build
+```
+
+Por padrão, o frontend fica em **http://localhost:8080** e o backend em
+**http://localhost:4001**. As portas podem ser ajustadas por `FRONTEND_PORT` e
+`BACKEND_PORT` no `.env` da raiz.
+
+Para execução exclusivamente pelo Compose, **`backend/.env` e `frontend/.env`
+não são necessários**: o Compose fornece as variáveis do backend em runtime e
+os argumentos de build do frontend. Nesse build, `VITE_API_URL=/backend` e
+`VITE_SOCKET_URL=/` usam o proxy Nginx. Consulte também as instruções de Docker
+Compose no início deste README, incluindo os requisitos do Atlas e as validações.
 
 ---
 
