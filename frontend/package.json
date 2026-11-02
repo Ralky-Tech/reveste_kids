@@ -8,6 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test src/utils/searchPieces.test.js",
+    "test:coverage": "node ../scripts/coverage.mjs frontend",
+    "coverage": "npm run test:coverage",
     "format:fix": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview"

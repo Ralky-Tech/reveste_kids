@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:coverage": "node ../scripts/coverage.mjs backend",
+    "coverage": "npm run test:coverage"
   },
   "keywords": [],
   "author": "",
