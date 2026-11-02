@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
+// Cold module loading can exceed 15s on Windows during Docker startup.
+const subprocessTimeout = process.platform === 'win32' ? 45000 : 15000;
+
 // Each environment gets a fresh module graph and a real Mongoose instance.
 // dotenv and index writes are intercepted; no database connection is opened.
 const offlineProbe = `
@@ -59,7 +62,7 @@ test('entry point evaluates the index policy before any application import', () 
 for (const environment of ['production', 'development', 'test', '']) {
   test('real model initialization respects index policy: ' + (environment || 'unset'), () => {
     const result = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', offlineProbe], {
-      cwd: new URL('../', import.meta.url), encoding: 'utf8', timeout: 15000,
+      cwd: new URL('../', import.meta.url), encoding: 'utf8', timeout: subprocessTimeout,
       env: { ...process.env, NODE_ENV: environment, POLICY_TEST_DOTENV: '' },
     }));
     assert.equal(result.production, environment === 'production');
@@ -70,7 +73,7 @@ for (const environment of ['production', 'development', 'test', '']) {
 
 test('production environment loaded by dotenv is applied before model compilation', () => {
   const result = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', offlineProbe], {
-    cwd: new URL('../', import.meta.url), encoding: 'utf8', timeout: 15000,
+    cwd: new URL('../', import.meta.url), encoding: 'utf8', timeout: subprocessTimeout,
     env: { ...process.env, NODE_ENV: 'development', POLICY_TEST_DOTENV: '1' },
   }));
   assert.equal(result.production, true);

@@ -1,5 +1,155 @@
 # Reveste Kids - Plataforma de Troca de Roupas
 
+## Executar com Docker Compose (IEC / FATEC)
+
+Requisitos: Git, Docker Engine/Docker Desktop em modo **Linux containers** com
+Compose v2 ou superior, acesso de rede ao MongoDB Atlas e uma credencial
+autorizada para o banco da equipe. Node/npm no computador não são necessários
+para usar Compose. As imagens usam Node 24 e dependências dos `package-lock.json`.
+
+### Configuração inicial (uma vez por integrante)
+
+Na raiz do repositório, copie `.env.example` para `.env` e configure os valores
+localmente. Não sobrescreva um `.env` existente. No PowerShell:
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+- `MONGODB_URI`: URI do banco Atlas autorizado para o uso do grupo. Nenhum MongoDB
+  é criado pelo Compose. Não coloque a URI nos Dockerfiles ou argumentos de build.
+- `JWTSECRET`: segredo da sessão, compartilhado apenas pelo canal privado da equipe.
+  É obrigatório; o exemplo não contém uma senha padrão.
+- `GOOGLE_CLIENT_ID`: Client ID **público** do cliente web Google. O Compose usa o
+  mesmo valor no backend e no build do frontend. Client Secret não é utilizado.
+  Sem esse valor o botão Google fica oculto; login tradicional continua disponível.
+- `EMAIL_*`: configuração SMTP opcional para entrega de e-mails. Roupas, matches,
+  notificações internas e chat continuam disponíveis sem SMTP; o envio de e-mail
+  não será concluído até a configuração estar correta.
+- `DOCKER_DNS_SERVER`: IP opcional do resolvedor acessível pela sua rede, se houver
+  falha SRV do Atlas. Vazio preserva o DNS padrão. Afeta somente o Node no contêiner.
+
+O Atlas precisa permitir o IP de saída do computador. Os índices Google
+`google_sub_unique` e `email_case_insensitive_unique` devem estar provisionados
+por um responsável; consulte [Google Auth](backend/docs/google-auth.md).
+**O bootstrap Docker desativa `autoIndex` e `autoCreate` antes de importar modelos.**
+Iniciar o sistema não é uma migração. Ações feitas na aplicação continuam gravando
+no banco autorizado, conforme suas permissões; não use uma base sem autorização.
+
+### Um comando para iniciar os dois serviços
+
+```powershell
+docker compose up -d --build
+```
+
+Abra **http://localhost:8080**. O backend fica acessível diretamente em
+**http://localhost:4001** (`/health`, `/api-docs/`). As portas 5173 e 4000 usadas
+por `npm run dev` não são ocupadas pelo Compose. Os serviços são publicados
+somente no loopback do computador.
+
+Se alguma porta já estiver ocupada, ajuste `FRONTEND_PORT` ou `BACKEND_PORT` no
+`.env` local, sem encerrar o processo existente. `FRONTEND_ORIGIN` é opcional;
+na configuração padrão o CORS acompanha `http://localhost:FRONTEND_PORT`.
+O Swagger acompanha a porta pública do backend; `SWAGGER_SERVER_URL` permite
+informar outra URL pública explicitamente sem mudar o padrão fora do Docker.
+
+O navegador acessa `/backend/...` na origem do frontend. Nginx encaminha essa
+rota ao serviço `backend:4000`, preservando `/api/...`. Socket.IO usa a mesma
+origem com `/socket.io/`, incluindo upgrade WebSocket. **Não use
+`http://backend:4000` como URL do navegador**: esse nome só existe na rede Docker.
+React Router funciona também em links diretos, como `/feed` e `/register`.
+
+Vite incorpora variáveis `VITE_*` durante o **build**. No Docker, API e Socket.IO
+usam os valores públicos `/backend` e `/`; as configurações existentes de
+Vercel/Render e os fallbacks para `npm run dev` são preservados. Alterar o Client
+ID exige reconstruir a imagem frontend. Nenhuma senha ou URI é passada ao build.
+
+Para Google Auth, autorize **http://localhost:8080** no cliente OAuth web do
+Google (ou a porta que escolheu). As origens Vercel existentes devem permanecer
+autorizadas. Se o cliente estiver em modo de teste, permita as contas de teste.
+Não altere a configuração de produção para substituir as origens existentes.
+
+### Status, logs e parada
+
+```powershell
+docker compose config --quiet
+docker compose ps
+docker compose logs -f
+docker compose logs -f backend
+docker compose down
+```
+
+`config --quiet` valida sem imprimir as variáveis resolvidas. Não compartilhe a
+saída de `docker compose config` sem `--quiet`, `docker inspect` ou logs que
+contenham dados sensíveis. Credenciais são fornecidas apenas em runtime, não nas
+imagens; quem administra o Docker local ainda pode acessar o ambiente dos serviços.
+`down` remove os contêineres/rede deste projeto, sem remover dados do Atlas.
+
+Com npm instalado, os atalhos equivalentes na raiz são:
+
+```powershell
+npm run compose:up
+npm run compose:logs
+npm run compose:down
+npm run compose:config
+npm run compose -- ps
+```
+
+Os comandos de desenvolvimento existentes continuam iguais: `npm run dev` na
+raiz, ou nos diretórios frontend/backend. O backend Docker executa
+`docker-entrypoint.js`, enquanto Render continua usando seu `npm start`.
+
+### Validação local sem acessar Atlas
+
+```powershell
+npm --prefix backend ci
+npm --prefix backend test
+npm --prefix frontend ci
+npm --prefix frontend run lint
+npm --prefix frontend test
+npm --prefix frontend run build
+```
+
+Para validar **as imagens e o proxy** sem iniciar a aplicação real, use um
+terminal separado, sem carregar credenciais reais, e a sobreposição de CI:
+
+```powershell
+$env:MONGODB_URI = 'mongodb://example.invalid/reveste_ci'
+$env:JWTSECRET = 'ci-placeholder-not-a-real-secret'
+$env:GOOGLE_CLIENT_ID = ''
+$env:FRONTEND_PORT = '18080'
+$env:BACKEND_PORT = '14001'
+$env:COMPOSE_PROJECT_NAME = 'reveste-ci'
+docker compose -f compose.yaml -f compose.ci.yaml config --quiet
+docker compose -f compose.yaml -f compose.ci.yaml up -d --build --wait --wait-timeout 120
+docker compose -f compose.yaml -f compose.ci.yaml exec -T backend node tests/docker-verify.mjs
+docker compose -f compose.yaml -f compose.ci.yaml down
+```
+
+Essa sobreposição substitui somente o processo backend por um servidor simulado,
+sem modelos ou banco. Verifica SPA, CORS, proxy HTTP, caminhos `/api` e Socket.IO
+WebSocket. **Ela não serve para uso funcional da aplicação.** Feche esse terminal
+ao terminar para descartar as variáveis de teste. Se usar outro nome de projeto,
+repita o mesmo nome no comando de parada; não pare os serviços de outro integrante.
+
+### GitHub Actions: integração e entrega contínuas, sem deploy
+
+O workflow `.github/workflows/ci.yaml` executa em `push` e `pull_request` para
+`main`, além de execução manual:
+
+1. Backend: `npm ci`, sintaxe JavaScript e `npm test`, com dependências externas
+   isoladas. Não existe script de lint/build do backend; ele é executado como Node.
+2. Frontend: `npm ci`, lint, testes e build. O `dist` é disponibilizado como artefato.
+3. Docker: build das duas imagens, verificação de runtime e teste Compose offline.
+
+As Actions são fixadas por SHA, têm permissão de leitura e não precisam de
+segredos Atlas, Google ou registry. **Não há push de imagens, merge, chamada a
+Render/Vercel ou deploy automático pelo workflow.** O empacotamento prepara a
+entrega; a publicação continua sob o fluxo já existente de Render/Vercel e deve
+ser autorizada separadamente. Não altere esses serviços para validar este PR.
+
+---
+
 Aplicação fullstack desenvolvida com Node.js, Express, MongoDB Atlas, React e Cloudinary, permitindo a troca de roupas entre usuários através de uma experiência moderna inspirada em redes sociais como TikTok e Instagram.
 
 ---
