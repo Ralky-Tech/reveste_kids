@@ -183,49 +183,39 @@ Projeto desenvolvido para a disciplina Desenvolvimento Web III, com foco em:
 
 ---
 
-# Tecnologias utilizadas
+## Arquitetura atual do ReVeste Kids
 
-## Backend
+![Diagrama da arquitetura atual do ReVeste Kids: React/Vite na Vercel e aplicativo React Native/Expo consumindo uma API Node.js/Express no Render, com MongoDB Atlas e Cloudinary. Automação com GitHub Actions, Docker Compose, Husky e Coverage.](docs/images/arquitetura-reveste-kids.png)
 
-* Node.js
-* Express
-* MongoDB Atlas
-* Mongoose
-* JWT
-* Dotenv
-* Swagger UI
-* Nodemailer
-* Socket.IO
-* Multer
-* Cloudinary SDK
+> **Ambientes:** em produção, frontend web na **Vercel** e API no **Render**. Para desenvolvimento e demonstração local, **Docker Compose** executa o frontend web (Nginx + React) e o backend Node.js; o MongoDB Atlas e o Cloudinary permanecem serviços externos. O aplicativo Expo é um projeto separado e não é iniciado pelo Compose.
 
----
+### Tecnologias utilizadas
 
-## Frontend
+| Camada / finalidade | Tecnologia / serviço |
+|---|---|
+| Frontend web | React, Vite, React Router, CSS |
+| Hospedagem do frontend web | **Vercel** |
+| Aplicativo mobile | React Native, Expo, TypeScript, Expo Router |
+| Backend / API REST | Node.js 24, Express, Mongoose |
+| Hospedagem do backend | **Render** |
+| Banco de dados | MongoDB Atlas |
+| Armazenamento de mídia | Cloudinary (imagens e vídeos) |
+| Autenticação | JWT e Google OAuth 2.0 com validação de ID Token |
+| Comunicação em tempo real | Socket.IO / WebSocket |
+| E-mail e notificações | Nodemailer / SMTP (configuração opcional para e-mails) |
+| Documentação da API | Swagger / OpenAPI |
+| Containerização | Docker, Dockerfiles de frontend e backend |
+| Orquestração local | Docker Compose (`compose.yaml`) |
+| Servidor web e proxy local | Nginx |
+| Versionamento e colaboração | Git + GitHub, organização Ralky-Tech |
+| Integração contínua (CI) | GitHub Actions: testes, lint, build e smoke tests de Docker |
+| Hospedagem / implantação de produção | Vercel e Render; **o workflow CI não executa deploy automático** |
+| Testes unitários | Node.js `node:test` (backend e frontend) |
+| Cobertura | Cobertura nativa do Node.js com relatórios HTML e LCOV |
+| Pre-commit | Husky + testes do backend + ESLint e testes do frontend |
+| Testes de mutação | Avaliação experimental local, sem Stryker integrado ao pipeline |
 
-* React
-* Vite
-* React Router DOM
-* CSS moderno
-* Fetch API
-* LocalStorage
-
----
-
-## Upload de mídia
-
-* Cloudinary
-
----
-
-## Ferramentas
-
-* Git
-* GitHub
-* Swagger
-* Insomnia
-* Vercel
-* Render
+> **Não utilizamos AWS** na infraestrutura implantada deste projeto. As métricas de coverage publicadas anteriormente referem-se apenas aos arquivos carregados pelos testes; não representam cobertura total da aplicação.
 
 ---
 
@@ -404,7 +394,7 @@ reveste_kids/
 ## 1. Clonar o projeto
 
 ```bash
-git clone https://github.com/toledorp/reveste_kids.git
+git clone https://github.com/Ralky-Tech/reveste_kids.git
 ```
 
 ---
