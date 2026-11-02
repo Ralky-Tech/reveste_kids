@@ -3,6 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "prepare": "node .husky/install.mjs",
+    "setup": "npm --prefix backend ci && npm --prefix frontend ci",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
+    "lint": "npm --prefix frontend run lint",
+    "precommit:check": "npm run test:backend && npm run lint && npm run test:frontend",
+    "test:coverage": "npm run coverage",
+    "coverage": "npm --prefix backend run coverage && npm --prefix frontend run coverage",
     "dev": "concurrently -n BACK,FRONT -c green,blue \"npm run dev:back\" \"npm run dev:front\"",
     "dev:back": "npm --prefix backend run dev",
     "dev:front": "npm --prefix frontend run dev",
@@ -13,7 +22,8 @@
     "compose:config": "docker compose config --quiet"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "husky": "9.1.7"
   },
   "dependencies": {
     "socket.io": "^4.8.3"
