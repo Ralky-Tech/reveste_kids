@@ -1,19 +1,18 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { loginUser, loginGoogle } from '../services/api';
 import { GoogleLogin } from '@react-oauth/google';
+import { loginUser, loginGoogle } from '../services/api';
 import './AuthPanel.css';
 
 function AuthPanel({ onAuthSuccess }) {
   const [email, setEmail] = useState('');
-
   const [password, setPassword] = useState('');
-
   const [message, setMessage] = useState('');
-
   const [error, setError] = useState('');
-
   const [loading, setLoading] = useState(false);
+
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   const resetMessages = () => {
     setMessage('');
@@ -21,27 +20,68 @@ function AuthPanel({ onAuthSuccess }) {
   };
 
   const storeSession = (token) => {
-    const segment = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = segment.padEnd(Math.ceil(segment.length / 4) * 4, '=');
-    const bytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
+    if (!token || typeof token !== 'string') {
+      throw new Error('Token de autenticação inválido.');
+    }
+
+    const segment = token.split('.')[1];
+
+    if (!segment) {
+      throw new Error('Token de autenticação inválido.');
+    }
+
+    const padded = segment
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .padEnd(Math.ceil(segment.length / 4) * 4, '=');
+
+    const bytes = Uint8Array.from(atob(padded), (char) =>
+      char.charCodeAt(0)
+    );
+
     const payload = JSON.parse(new TextDecoder().decode(bytes));
+
     if (!payload.id || !payload.email || !payload.role) {
       throw new Error('Sessão inválida.');
     }
+
     localStorage.setItem('token', token);
     localStorage.setItem('role', payload.role);
-    localStorage.setItem('user', JSON.stringify({ _id: payload.id, email: payload.email, role: payload.role }));
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        _id: payload.id,
+        email: payload.email,
+        role: payload.role,
+      })
+    );
+
     setMessage('Login realizado com sucesso.');
-    setTimeout(() => onAuthSuccess(), 700);
+
+    setTimeout(() => {
+      onAuthSuccess();
+    }, 700);
   };
 
-  const handleGoogleSuccess = async ({ credential }) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
     if (loading) return;
+
     resetMessages();
     setLoading(true);
+
     try {
-      if (!credential) throw new Error('ID Token do Google não recebido.');
-      const data = await loginGoogle(credential);
+      const idToken = credentialResponse?.credential;
+
+      if (!idToken) {
+        throw new Error('ID Token do Google não recebido.');
+      }
+
+      const data = await loginGoogle(idToken);
+
+      if (!data.token) {
+        throw new Error('O servidor não retornou um token de autenticação.');
+      }
+
       storeSession(data.token);
     } catch (err) {
       setError(err.message || 'Falha no login com Google.');
@@ -53,11 +93,17 @@ function AuthPanel({ onAuthSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     resetMessages();
     setLoading(true);
 
     try {
       const data = await loginUser(email, password);
+
+      if (!data.token) {
+        throw new Error('O servidor não retornou um token de autenticação.');
+      }
 
       storeSession(data.token);
     } catch (err) {
@@ -84,14 +130,10 @@ function AuthPanel({ onAuthSuccess }) {
 
             <h1 className="auth-title-big">
               <span className="line">Novas</span>
-
               <span className="line">fases da</span>
-
               <span className="line highlight">infância</span>
-
               <span className="line">
                 <span className="highlight">circulando</span>
-
                 <span className="dot">.</span>
               </span>
             </h1>
@@ -128,16 +170,32 @@ function AuthPanel({ onAuthSuccess }) {
               Esqueceu a senha?
             </button>
 
-            {message && <p className="auth-message success">{message}</p>}
+            {message && (
+              <p className="auth-message success">{message}</p>
+            )}
 
-            {error && <p className="auth-message error">{error}</p>}
+            {error && (
+              <p className="auth-message error">{error}</p>
+            )}
 
-            {import.meta.env.VITE_GOOGLE_CLIENT_ID && !loading && (
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Não foi possível autenticar com o Google.')}
-                auto_select={false}
-              />
+            {googleClientId && (
+              <div className="google-login-container">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => {
+                    resetMessages();
+                    setError('Não foi possível autenticar com o Google.');
+                  }}
+                  theme="filled_black"
+                  size="large"
+                  shape="pill"
+                  text="continue_with"
+                  logo_alignment="center"
+                  width="390"
+                  useOneTap={false}
+                  auto_select={false}
+                />
+              </div>
             )}
 
             <div className="auth-toggle">
@@ -147,8 +205,11 @@ function AuthPanel({ onAuthSuccess }) {
             </div>
 
             <div className="auth-brand">
-              <img src="/ralky-white.png" alt="Ralky" className="brand-logo" />
-
+              <img
+                src="/ralky-white.png"
+                alt="Ralky"
+                className="brand-logo"
+              />
               <span>Ralky</span>
             </div>
           </div>
@@ -158,29 +219,19 @@ function AuthPanel({ onAuthSuccess }) {
       <footer className="auth-footer">
         <div className="auth-footer-links">
           <button>Ralky</button>
-
           <button>Sobre</button>
-
           <button>Ajuda</button>
-
           <button>API</button>
-
           <button>Comunidade</button>
-
           <button>Diretrizes</button>
-
           <button>Segurança</button>
-
           <button>Privacidade</button>
-
           <button>Termos</button>
-
           <button>Contato</button>
         </div>
 
         <div className="auth-footer-bottom">
           <span>Português (Brasil)</span>
-
           <span>© 2026 ReVeste by Ralky</span>
         </div>
       </footer>
