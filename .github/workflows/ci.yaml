@@ -64,6 +64,36 @@ jobs:
           path: frontend/dist
           retention-days: 3
 
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      # Test-only addresses for the build. The app never calls production in CI.
+      EXPO_PUBLIC_API_URL: http://127.0.0.1:4000
+      EXPO_PUBLIC_CLOUDINARY_API_URL: http://127.0.0.1:4000/cloudinary
+      EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME: teste
+      EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET: teste
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      # Mock API tests (local Node server only, no external access).
+      - run: npm run mock:testar
+      - run: npm run doctor
+      - name: Android bundle
+        run: npx expo export --platform android --output-dir dist
+
   docker:
     needs: [backend, frontend]
     runs-on: ubuntu-latest

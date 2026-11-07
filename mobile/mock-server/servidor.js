@@ -194,8 +194,10 @@ async function rotear(req, res) {
   const metodo = req.method;
 
   // Arquivos de imagem
-  if (metodo === "GET" && partes[0] === "imagens") return servirArquivo(res, PASTA_IMAGENS, partes[1]);
-  if (metodo === "GET" && partes[0] === "uploads") return servirArquivo(res, PASTA_UPLOADS, partes[1]);
+  if (metodo === "GET" && partes[0] === "imagens")
+    return servirArquivo(res, PASTA_IMAGENS, partes[1]);
+  if (metodo === "GET" && partes[0] === "uploads")
+    return servirArquivo(res, PASTA_UPLOADS, partes[1]);
 
   // Cadastro de usuário
   if (metodo === "POST" && url.pathname === "/user") {
@@ -206,14 +208,21 @@ async function rotear(req, res) {
     if (usuarios.some((u) => u.email === corpo.email)) {
       return responder(res, 400, { error: "Este e-mail já está cadastrado." });
     }
-    usuarios.push({ _id: novoId(), name: corpo.name, email: corpo.email, password: corpo.password });
+    usuarios.push({
+      _id: novoId(),
+      name: corpo.name,
+      email: corpo.email,
+      password: corpo.password,
+    });
     return responder(res, 201, { message: "Usuário criado com sucesso." });
   }
 
   // Login
   if (metodo === "POST" && url.pathname === "/auth") {
     const corpo = await lerJson(req);
-    const usuario = usuarios.find((u) => u.email === corpo?.email && u.password === corpo?.password);
+    const usuario = usuarios.find(
+      (u) => u.email === corpo?.email && u.password === corpo?.password,
+    );
     if (!usuario) return responder(res, 401, { error: "E-mail ou senha inválidos." });
     return responder(res, 200, { token: gerarToken(usuario) });
   }
@@ -257,11 +266,19 @@ async function rotear(req, res) {
 
   // Peças
   if (metodo === "GET" && url.pathname === "/clothes") {
-    return responder(res, 200, roupas.map((r) => formatarRoupa(req, r)));
+    return responder(
+      res,
+      200,
+      roupas.map((r) => formatarRoupa(req, r)),
+    );
   }
   if (metodo === "GET" && url.pathname === "/my-clothes") {
     const minhas = roupas.filter((r) => r.userId === usuario._id);
-    return responder(res, 200, minhas.map((r) => formatarRoupa(req, r)));
+    return responder(
+      res,
+      200,
+      minhas.map((r) => formatarRoupa(req, r)),
+    );
   }
   if (metodo === "POST" && url.pathname === "/clothes") {
     if (FALHAR === "cadastro") {
@@ -302,7 +319,11 @@ async function rotear(req, res) {
   // Curtidas e matches
   if (metodo === "GET" && url.pathname === "/api/my-likes") {
     const minhas = curtidas.filter((c) => c.userId === usuario._id);
-    return responder(res, 200, minhas.map((c) => ({ clothingId: c.clothingId })));
+    return responder(
+      res,
+      200,
+      minhas.map((c) => ({ clothingId: c.clothingId })),
+    );
   }
   if (partes[0] === "api" && partes[1] === "like" && partes[2]) {
     const roupa = roupas.find((r) => r._id === partes[2]);
@@ -311,6 +332,10 @@ async function rotear(req, res) {
     if (metodo === "POST") {
       if (roupa.userId === usuario._id) {
         return responder(res, 400, { error: "Você não pode curtir a sua própria peça." });
+      }
+      // O backend real falha (erro 500) ao curtir peça sem dono; aqui a recusa é explícita
+      if (!roupa.userId) {
+        return responder(res, 400, { error: "Esta peça não está disponível para troca." });
       }
       if (!curtidas.some((c) => c.userId === usuario._id && c.clothingId === roupa._id)) {
         curtidas.push({ userId: usuario._id, clothingId: roupa._id });
@@ -321,13 +346,13 @@ async function rotear(req, res) {
         curtidas.some(
           (c) =>
             c.userId === roupa.userId &&
-            roupas.some((r) => r._id === c.clothingId && r.userId === usuario._id)
+            roupas.some((r) => r._id === c.clothingId && r.userId === usuario._id),
         );
       return responder(res, 201, { message: "Curtida registrada.", matchCreated });
     }
     if (metodo === "DELETE") {
       const indice = curtidas.findIndex(
-        (c) => c.userId === usuario._id && c.clothingId === roupa._id
+        (c) => c.userId === usuario._id && c.clothingId === roupa._id,
       );
       if (indice >= 0) curtidas.splice(indice, 1);
       return responder(res, 200, { message: "Curtida removida." });
@@ -341,7 +366,7 @@ async function rotear(req, res) {
       const curtidaDeVolta = curtidas.find(
         (c) =>
           c.userId === roupaDoOutro.userId &&
-          roupas.some((r) => r._id === c.clothingId && r.userId === usuario._id)
+          roupas.some((r) => r._id === c.clothingId && r.userId === usuario._id),
       );
       if (!curtidaDeVolta) continue;
       const outro = usuarios.find((u) => u._id === roupaDoOutro.userId);
@@ -383,7 +408,9 @@ servidor.listen(PORTA, "0.0.0.0", () => {
   const ip = ips[0] || "SEU-IP";
 
   console.log("\nServidor simulado do ReVeste Kids rodando.");
-  console.log(`Token válido por ${TOKEN_MINUTOS} minuto(s).${FALHAR ? ` Falha simulada: ${FALHAR}.` : ""}`);
+  console.log(
+    `Token válido por ${TOKEN_MINUTOS} minuto(s).${FALHAR ? ` Falha simulada: ${FALHAR}.` : ""}`,
+  );
   console.log("\nUse no arquivo .env (troque o IP se o celular estiver em outra rede):\n");
   console.log(`EXPO_PUBLIC_API_URL=http://${ip}:${PORTA}`);
   console.log(`EXPO_PUBLIC_CLOUDINARY_API_URL=http://${ip}:${PORTA}/cloudinary`);

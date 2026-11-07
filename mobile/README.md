@@ -120,7 +120,8 @@ uma das contas de teste (senha `123456`): `teste@teste.com`, `ana@teste.com` ou 
 
 **Roteiro de teste no Android** (conta `teste@teste.com`):
 
-1. O feed mostra 4 peças de outras pessoas, incluindo "Casaco de lã (dono removido)", sem travar.
+1. O feed mostra 4 peças de outras pessoas, incluindo "Casaco de lã (dono removido)", sem travar e marcada
+   como "Indisponível" (sem botão de curtir).
 2. Curtir a "Jaqueta jeans" gera o aviso de match; a tela de matches mostra a Ana.
 3. Cadastrar uma peça com foto da galeria e da câmera; ela aparece no Meu Closet, agrupada pela categoria.
 4. Excluir a peça no Meu Closet.
@@ -144,6 +145,11 @@ Executa a checagem de tipos (`npm run typecheck`), o lint (`npm run lint`) e o E
 (`npm run doctor`, que precisa de internet). O comando `npm run mock:testar` sobe o servidor simulado,
 testa todas as rotas usadas pelo app (27 verificações) e desliga.
 
+As mesmas verificações rodam automaticamente no GitHub Actions, no job `mobile` do workflow da equipe
+(`.github/workflows/ci.yaml`), em todo push e Pull Request para a `main`: instalação limpa (`npm ci`),
+TypeScript, lint, testes do servidor simulado, Expo Doctor e compilação para Android com endereços de
+teste. O resultado aparece na aba **Checks** do PR.
+
 ## Segurança e tratamento de erros
 
 - O token JWT fica no **expo-secure-store** (armazenamento criptografado do sistema). Os dados não
@@ -152,7 +158,10 @@ testa todas as rotas usadas pelo app (27 verificações) e desliga.
   a sessão é encerrada e o app volta para o login; se não for possível apagar os dados salvos, a pessoa
   é avisada (eles são substituídos no próximo login).
 - Falhas ao salvar ou apagar a sessão são avisadas na tela.
-- Peças cujo dono não existe mais aparecem como "Usuário", sem travar o feed.
+- Peças cujo dono não existe mais aparecem como "Usuário", sem travar o feed, e ficam marcadas como
+  indisponíveis: o app não permite curtir nem demonstrar interesse nelas.
+- No Perfil, se algum número não puder ser carregado, ele aparece como "—" com um aviso e um botão para
+  tentar de novo, em vez de mostrar 0.
 - No cadastro de peças, o tamanho de cada foto é conferido antes do envio (pelo seletor de imagens ou,
   se ele não informar, lendo o arquivo); fotos acima de 10 MB são recusadas. Cada envio tem tempo limite,
   que vale até a resposta ser lida por completo. Se algo falhar no meio, as fotos que já subiram não são
@@ -183,6 +192,11 @@ Essas pendências devem desaparecer ao atualizar o projeto para um SDK do Expo m
 um Expo Go compatível nos celulares de teste.
 
 ## Compatibilidade com o backend
+
+**Ponto de atenção no backend:** em `backend/services/interestService.js`, a curtida é gravada antes de
+verificar a peça, e o acesso a `likedClothingOwnerId._id` falha quando o dono da peça foi removido
+(`userId` nulo): a requisição termina em erro 500 e a curtida fica gravada. O app evita essa situação
+bloqueando curtidas em peças sem dono, e o servidor simulado recusa esse caso com erro 400.
 
 O backend atual grava **categoria, tamanho, condição e estilo** das peças, e o app envia os quatro
 campos. Os valores oferecidos no app seguem os exemplos usados no site (por exemplo, "Nova", "Seminova"

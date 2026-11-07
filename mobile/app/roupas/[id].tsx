@@ -103,6 +103,7 @@ export default function DetalhesRoupa() {
   const fotos = roupa.media.map((m) =>
     m.type === "video" ? m.url.replace(/\.[^./]+$/, ".jpg") : m.url,
   );
+  const semDono = idDoDono(roupa) === "";
   const etiquetas = [
     roupa.category,
     roupa.size && `Tam. ${roupa.size}`,
@@ -156,6 +157,10 @@ export default function DetalhesRoupa() {
 
         {minha ? (
           <Botao texto="Excluir peça" cor={cores.perigo} contorno onPress={confirmarExclusao} />
+        ) : semDono ? (
+          <Text style={styles.indisponivel}>
+            Esta peça não está disponível para troca: a conta de quem anunciou foi removida.
+          </Text>
         ) : (
           <Botao
             texto={curtida ? "Remover interesse" : "Tenho interesse"}
@@ -213,6 +218,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
+  },
+  indisponivel: {
+    color: cores.textoSuave,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
   },
   textoCurtidas: {
     marginLeft: 6,
