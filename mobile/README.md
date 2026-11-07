@@ -190,4 +190,4 @@ e "Usada" para a condição).
 
 ## Autor
 
-Ricardo Sugano — Desenvolvimento de Software Multiplataforma, Fatec Registro.
+Ralky-Tech — DSM 4, Fatec Registro.
