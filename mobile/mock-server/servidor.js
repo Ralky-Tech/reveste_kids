@@ -110,6 +110,14 @@ const roupas = [
 // A Ana já curtiu a peça da Pessoa Teste: se a Pessoa Teste curtir uma peça da Ana, dá match
 const curtidas = [{ userId: "u-ana", clothingId: "r-body" }];
 
+// Cenário reproduzível da central de notificações (Rogério).
+const notificacoes = [
+  { _id: "n-curtida", userId: "u-teste", type: "LIKE", message: "Ana curtiu seu Body listrado.", read: false, createdAt: "2026-11-01T12:00:00.000Z" },
+  { _id: "n-match", userId: "u-teste", type: "MATCH", message: "Você tem um novo match com Ana!", read: false, createdAt: "2026-11-01T11:00:00.000Z" },
+  { _id: "n-mensagem", userId: "u-teste", type: "MESSAGE", message: "Bruno enviou uma mensagem.", read: true, createdAt: "2026-10-31T10:00:00.000Z" },
+  { _id: "n-ana", userId: "u-ana", type: "LIKE", message: "Uma pessoa curtiu sua peça.", read: false, createdAt: "2026-11-01T10:00:00.000Z" },
+];
+
 // ---------------------------------------------------------------------------
 // Token simulado (mesmo formato de um JWT, mas sem assinatura válida)
 // ---------------------------------------------------------------------------
@@ -380,6 +388,23 @@ async function rotear(req, res) {
     return responder(res, 200, matches);
   }
 
+  // Notificações: sempre restritas à pessoa autenticada.
+  if (metodo === "GET" && url.pathname === "/api/notifications") {
+    const minhas = notificacoes
+      .filter((n) => n.userId === usuario._id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return responder(res, 200, {
+      notifications: minhas,
+      unreadCount: minhas.filter((n) => !n.read).length,
+    });
+  }
+  if (metodo === "PATCH" && partes.length === 4 && partes[0] === "api" && partes[1] === "notifications" && partes[3] === "read") {
+    const notificacao = notificacoes.find((n) => n._id === partes[2] && n.userId === usuario._id);
+    if (!notificacao) return responder(res, 404, { error: "Notificação não encontrada" });
+    notificacao.read = true;
+    return responder(res, 200, notificacao);
+  }
+
   return responder(res, 404, { error: "Rota não encontrada no servidor simulado." });
 }
 
@@ -387,6 +412,15 @@ async function rotear(req, res) {
 // Inicialização
 // ---------------------------------------------------------------------------
 const servidor = http.createServer(async (req, res) => {
+  // O mock não usa cookies: libera a origem para testes locais no Expo web.
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
   res.on("finish", () => log(req, res.statusCode));
   try {
     await rotear(req, res);

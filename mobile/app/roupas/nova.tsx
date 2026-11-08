@@ -1,9 +1,9 @@
+import { Alert } from "../../utils/alerta";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -29,6 +29,7 @@ const MAXIMO_FOTOS = 4;
 // assim, se algo falhar, a nova tentativa não envia de novo as fotos que já subiram.
 interface Foto {
   uri: string;
+  arquivoWeb?: File;
   url?: string;
 }
 
@@ -52,13 +53,13 @@ export default function NovaRoupa() {
     const novas: Foto[] = [];
 
     for (const arquivo of arquivos) {
-      const tamanho = tamanhoDoArquivo(arquivo.uri, arquivo.fileSize);
+      const tamanho = tamanhoDoArquivo(arquivo.uri, arquivo.file?.size ?? arquivo.fileSize);
       if (tamanho === null) {
         semTamanho++;
       } else if (tamanho > TAMANHO_MAXIMO) {
         grandes++;
       } else {
-        novas.push({ uri: arquivo.uri });
+        novas.push({ uri: arquivo.uri, arquivoWeb: arquivo.file });
       }
     }
 
@@ -83,7 +84,7 @@ export default function NovaRoupa() {
       return;
     }
 
-    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissao = Platform.OS === "web" ? { granted: true } : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissao.granted) {
       Alert.alert("Permissão negada", "Libere o acesso às fotos para escolher imagens da galeria.");
       return;
@@ -107,7 +108,12 @@ export default function NovaRoupa() {
       Alert.alert("Limite atingido", `Você pode adicionar até ${MAXIMO_FOTOS} fotos.`);
       return;
     }
-
+    if (Platform.OS === "web") {
+      // Abre diretamente no gesto do usuário; o navegador decide se oferece câmera.
+      const resultado = await ImagePicker.launchCameraAsync({ quality: 0.7 });
+      if (!resultado.canceled) adicionarFotos(resultado.assets);
+      return;
+    }
     const permissao = await ImagePicker.requestCameraPermissionsAsync();
     if (!permissao.granted) {
       Alert.alert("Permissão negada", "Libere o acesso à câmera para tirar fotos.");
@@ -151,7 +157,7 @@ export default function NovaRoupa() {
       if (atualizadas[i].url) continue;
       setProgresso(`Enviando foto ${i + 1} de ${atualizadas.length}…`);
       try {
-        const midia = await enviarFoto(atualizadas[i].uri);
+        const midia = await enviarFoto(atualizadas[i].uri, atualizadas[i].arquivoWeb);
         atualizadas[i] = { ...atualizadas[i], url: midia.url };
         setFotos([...atualizadas]);
       } catch (e) {

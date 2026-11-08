@@ -1,6 +1,7 @@
+import { Alert } from "../utils/alerta";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import Botao from "../components/Botao";
 import { cores } from "../constants/cores";
 import { sessaoExpirada } from "../services/api";

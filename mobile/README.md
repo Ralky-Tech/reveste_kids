@@ -16,6 +16,7 @@ contas, peças e curtidas são as mesmas do site.
 - Cadastro de peça com fotos da **galeria** ou da **câmera**, categoria, tamanho, condição e estilo
 - **Meu Closet** com as peças agrupadas por categoria
 - Lista de matches
+- Central de notificações com leitura individual e contador de não lidas no feed
 - Perfil com resumo de peças, curtidas e matches, e botão de sair
 
 ## Conteúdo das aulas aplicado no projeto
@@ -66,9 +67,20 @@ ReVesteKids/
 
 ## Plataformas
 
-O app é feito **somente para Android e iOS** (pelo Expo Go ou por um build nativo). A versão web
-não é suportada: o token de login fica no `expo-secure-store`, que não existe no navegador. Se o app
-for aberto num navegador, a tela inicial avisa e o login fica bloqueado.
+O app suporta **Android, iOS e web**. No celular, o token fica no `expo-secure-store`.
+No navegador, token e perfil ficam no `sessionStorage`: a sessão sobrevive a recargas da página
+e termina ao fechar a aba ou sair da conta. Não há criptografia equivalente ao SecureStore na web.
+
+Para abrir no notebook, mantenha `npm run mock` em um terminal e execute `npm run web` em outro,
+ambos dentro de `mobile`. Também é possível executar `npx expo start` e pressionar `w` (Open web).
+Use no `.env` as quatro linhas do mock; para testar apenas no notebook, a API pode apontar para
+`http://localhost:4000` e o upload para `http://localhost:4000/cloudinary`.
+
+O servidor mock permite CORS, incluindo preflight `OPTIONS`, autenticação e `PATCH`.
+A galeria usa o seletor de arquivos do navegador e envia o arquivo como multipart.
+O botão de câmera usa o seletor com captura, cuja disponibilidade depende do navegador e dispositivo;
+no notebook, use a galeria se ele não oferecer câmera. Alertas e confirmações usam os diálogos do navegador.
+Para usar outro backend na web, ele também precisa permitir a origem do app via CORS.
 
 ## Como executar
 
@@ -143,7 +155,10 @@ npm run verificar
 
 Executa a checagem de tipos (`npm run typecheck`), o lint (`npm run lint`) e o Expo Doctor
 (`npm run doctor`, que precisa de internet). O comando `npm run mock:testar` sobe o servidor simulado,
-testa todas as rotas usadas pelo app (27 verificações) e desliga.
+testa todas as rotas usadas pelo app (45 verificações) e desliga.
+
+O roteiro de demonstração e a explicação da central de notificações estão em
+[`RELATORIO-ROGERIO-NOTIFICACOES.md`](RELATORIO-ROGERIO-NOTIFICACOES.md).
 
 As mesmas verificações rodam automaticamente no GitHub Actions, no job `mobile` do workflow da equipe
 (`.github/workflows/ci.yaml`), em todo push e Pull Request para a `main`: instalação limpa (`npm ci`),

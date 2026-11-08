@@ -1,5 +1,6 @@
 import { ambiente } from "../constants/ambiente";
 import { Midia } from "../types/roupa";
+import { Platform } from "react-native";
 
 // Envio de fotos para o Cloudinary usando fetch (Aula 13).
 // A conta e o preset vêm do .env (constants/ambiente.ts).
@@ -7,13 +8,16 @@ import { Midia } from "../types/roupa";
 const TEMPO_LIMITE = 60000; // 60 segundos por foto
 export const TAMANHO_MAXIMO = 10 * 1024 * 1024; // 10 MB
 
-export async function enviarFoto(uri: string): Promise<Midia> {
+export async function enviarFoto(uri: string, arquivoWeb?: File): Promise<Midia> {
   if (!ambiente.cloudinaryCloudName || !ambiente.cloudinaryUploadPreset) {
     throw new Error("O envio de fotos não está configurado. Confira o arquivo .env.");
   }
 
   const formulario = new FormData();
-  formulario.append("file", {
+  if (Platform.OS === "web") {
+    if (!arquivoWeb) throw new Error("Selecione a foto novamente para enviar.");
+    formulario.append("file", arquivoWeb, arquivoWeb.name);
+  } else formulario.append("file", {
     uri,
     name: "foto.jpg",
     type: "image/jpeg",

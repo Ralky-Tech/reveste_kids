@@ -1,9 +1,9 @@
+import { Alert } from "../utils/alerta";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -16,6 +16,7 @@ import { cores } from "../constants/cores";
 import { mensagemDeErro, sessaoExpirada } from "../services/api";
 import { curtir, descurtir, listarMinhasCurtidas } from "../services/curtidas";
 import { listarRoupas } from "../services/roupas";
+import { listarNotificacoes } from "../services/notificacoes";
 import { Roupa } from "../types/roupa";
 import { carregarSessao } from "../utils/armazenamento";
 import { idDoDono } from "../utils/roupas";
@@ -27,6 +28,17 @@ export default function Feed() {
   const [carregando, setCarregando] = useState(true);
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState("");
+  const [naoLidas, setNaoLidas] = useState<number | null>(null);
+
+  async function carregarContador() {
+    try {
+      const resposta = await listarNotificacoes();
+      setNaoLidas(resposta.unreadCount);
+    } catch {
+      // Uma falha nas notificações não impede o carregamento das peças.
+      setNaoLidas(null);
+    }
+  }
 
   async function carregarFeed() {
     try {
@@ -54,6 +66,7 @@ export default function Feed() {
   useFocusEffect(
     useCallback(() => {
       carregarFeed();
+      carregarContador();
     }, []),
   );
 
@@ -99,6 +112,18 @@ export default function Feed() {
         options={{
           headerRight: () => (
             <View style={styles.acoes}>
+              <Pressable
+                onPress={() => router.push("/notificacoes")}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={naoLidas === null ? "Notificações. Contador indisponível" : `Notificações, ${naoLidas} não lidas`}
+                style={styles.sino}
+              >
+                <Ionicons name="notifications-outline" size={27} color={cores.primariaEscura} />
+                {naoLidas !== null && naoLidas > 0 && (
+                  <View style={styles.contador}><Text style={styles.numero}>{naoLidas > 99 ? "99+" : naoLidas}</Text></View>
+                )}
+              </Pressable>
               <IconeCabecalho
                 icone="add-circle-outline"
                 onPress={() => router.push("/roupas/nova")}
@@ -141,6 +166,7 @@ export default function Feed() {
               onRefresh={() => {
                 setAtualizando(true);
                 carregarFeed();
+                carregarContador();
               }}
             />
           }
@@ -169,6 +195,9 @@ function IconeCabecalho({ icone, onPress }: { icone: any; onPress: () => void })
 }
 
 const styles = StyleSheet.create({
+  sino: { marginLeft: 14 },
+  contador: { position: "absolute", top: -7, right: -8, backgroundColor: cores.perigo, borderRadius: 10, minWidth: 18, paddingHorizontal: 3, alignItems: "center" },
+  numero: { color: "#FFFFFF", fontSize: 11, fontWeight: "bold" },
   container: {
     flex: 1,
     backgroundColor: cores.fundo,
