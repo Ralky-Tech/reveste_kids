@@ -1,9 +1,9 @@
+import { Alert } from "../utils/alerta";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   SectionList,

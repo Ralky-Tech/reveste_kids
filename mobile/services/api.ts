@@ -1,6 +1,6 @@
+import { Alert } from "../utils/alerta";
 import axios from "axios";
 import { router } from "expo-router";
-import { Alert } from "react-native";
 import { ambiente } from "../constants/ambiente";
 import { carregarSessao, limparSessao } from "../utils/armazenamento";
 

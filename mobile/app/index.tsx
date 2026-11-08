@@ -51,7 +51,7 @@ export default function Home() {
 
         {!PLATAFORMA_SUPORTADA ? (
           <Text style={styles.erro}>
-            Este aplicativo funciona apenas no Android e no iOS. Abra pelo Expo Go no celular.
+            Plataforma não suportada. Abra pelo Expo Go ou pelo navegador web.
           </Text>
         ) : faltando.length > 0 ? (
           <Text style={styles.erro}>

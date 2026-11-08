@@ -1,6 +1,7 @@
+import { Alert } from "../utils/alerta";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from "react-native";
 import Botao from "../components/Botao";
 import Campo from "../components/Campo";
 import { cores } from "../constants/cores";

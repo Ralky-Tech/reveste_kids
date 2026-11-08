@@ -30,6 +30,20 @@ const ok = (cond, msg) => {
   console.log((cond ? "OK   " : "FALHA") + " " + msg);
 };
 
+// O navegador precisa do preflight para enviar Authorization e PATCH.
+const preflight = await fetch(B + "/api/notifications/n-curtida/read", {
+  method: "OPTIONS",
+  headers: {
+    Origin: "http://localhost:8081",
+    "Access-Control-Request-Method": "PATCH",
+    "Access-Control-Request-Headers": "authorization,content-type",
+  },
+});
+ok(preflight.status === 204 && preflight.headers.get("access-control-allow-origin") === "*", "preflight web libera origem sem exigir login");
+ok(preflight.headers.get("access-control-allow-methods").includes("PATCH") && preflight.headers.get("access-control-allow-headers").includes("Authorization"), "CORS permite PATCH, Authorization e Content-Type");
+const respostaWeb = await get("/clothes");
+ok(respostaWeb.status === 401 && respostaWeb.headers.get("access-control-allow-origin") === "*", "respostas de erro também têm cabeçalhos CORS");
+
 let [s, d] = await j(await post("/auth", { email: "teste@teste.com", password: "errada" }));
 ok(s === 401 && d.error, "login com senha errada -> 401 com mensagem");
 [s, d] = await j(await post("/auth", { email: "teste@teste.com", password: "123456" }));
@@ -157,6 +171,43 @@ const vencido =
   ".x";
 [s, d] = await j(await get("/clothes", vencido));
 ok(s === 401, "token vencido -> 401 (o app volta para o login)");
+
+// Central de notificações: contrato, autenticação, isolamento e persistência em memória.
+const patch = (p, credencial) => fetch(B + p, {
+  method: "PATCH",
+  headers: credencial ? { Authorization: "Bearer " + credencial } : {},
+});
+[s, d] = await j(await get("/api/notifications"));
+ok(s === 401, "notificações sem login -> 401");
+[s, d] = await j(await get("/api/notifications", vencido));
+ok(s === 401, "notificações com token vencido -> 401");
+[s, d] = await j(await get("/api/notifications", token));
+ok(s === 200 && d.notifications.length === 3 && d.unreadCount === 2, "lista inicial tem três notificações e duas não lidas");
+ok(d.notifications.every((n) => n.userId === payload.id), "lista somente notificações da pessoa autenticada");
+ok(d.notifications.every((n, i, lista) => i === 0 || lista[i - 1].createdAt >= n.createdAt), "notificações da mais nova para a mais antiga");
+[s, d] = await j(await patch("/api/notifications/n-curtida/read"));
+ok(s === 401, "marcar notificação sem login -> 401");
+[s, d] = await j(await patch("/api/notifications/n-curtida/read", vencido));
+ok(s === 401, "marcar notificação com token vencido -> 401");
+[s, d] = await j(await patch("/api/notifications/n-ana/read", token));
+ok(s === 404, "não permite marcar notificação de outra pessoa");
+[s, d] = await j(await patch("/api/notifications/inexistente/read", token));
+ok(s === 404 && d.error, "notificação inexistente -> 404 com mensagem");
+[s, d] = await j(await patch("/api/notifications/n-curtida/read", token));
+ok(s === 200 && d.read === true, "marca notificação como lida");
+[s, d] = await j(await patch("/api/notifications/n-curtida/read", token));
+ok(s === 200 && d.read === true, "marcar novamente mantém a leitura (idempotência)");
+[, d] = await j(await get("/api/notifications", token));
+ok(d.unreadCount === 1 && d.notifications.find((n) => n._id === "n-curtida").read, "nova consulta preserva leitura e reduz contador para um");
+await patch("/api/notifications/n-match/read", token);
+[, d] = await j(await get("/api/notifications", token));
+ok(d.unreadCount === 0 && d.notifications.every((n) => n.read), "todas lidas zeram o contador");
+[, d] = await j(await post("/auth", { email: "ana@teste.com", password: "123456" }));
+[, d] = await j(await get("/api/notifications", d.token));
+ok(d.unreadCount === 1 && d.notifications[0]._id === "n-ana", "notificação da Ana permanece não lida");
+[, d] = await j(await post("/auth", { email: "bruno@teste.com", password: "123456" }));
+[s, d] = await j(await get("/api/notifications", d.token));
+ok(s === 200 && d.notifications.length === 0 && d.unreadCount === 0, "conta sem notificações devolve lista vazia e contador zero");
 
 servidor.kill();
 await rm(path.join(pasta, "uploads"), { recursive: true, force: true });
