@@ -58,6 +58,10 @@ export default function Feed() {
   );
 
   async function alternarCurtida(roupa: Roupa) {
+    if (!idDoDono(roupa)) {
+      Alert.alert("Peça indisponível", "A conta de quem anunciou esta peça foi removida.");
+      return;
+    }
     const jaCurtiu = curtidas.includes(roupa._id);
     try {
       if (jaCurtiu) {

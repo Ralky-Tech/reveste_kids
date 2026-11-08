@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import Botao from "../components/Botao";
 import { cores } from "../constants/cores";
+import { sessaoExpirada } from "../services/api";
 import { listarMatches, listarMinhasCurtidas } from "../services/curtidas";
 import { listarMinhasRoupas } from "../services/roupas";
 import { Sessao } from "../types/roupa";
@@ -14,15 +15,32 @@ export default function Perfil() {
   const [pecas, setPecas] = useState<number | null>(null);
   const [curtidas, setCurtidas] = useState<number | null>(null);
   const [matches, setMatches] = useState<number | null>(null);
+  const [falhou, setFalhou] = useState(false);
+
+  // Uma falha não vira "0": o número fica como "—" e a tela avisa
+  async function carregarNumeros() {
+    setFalhou(false);
+    setPecas(null);
+    setCurtidas(null);
+    setMatches(null);
+    const [r, c, m] = await Promise.allSettled([
+      listarMinhasRoupas(),
+      listarMinhasCurtidas(),
+      listarMatches(),
+    ]);
+    setPecas(r.status === "fulfilled" ? r.value.length : NaN);
+    setCurtidas(c.status === "fulfilled" ? c.value.length : NaN);
+    setMatches(m.status === "fulfilled" ? m.value.length : NaN);
+    const erros = [r, c, m].filter((x) => x.status === "rejected") as PromiseRejectedResult[];
+    if (erros.length > 0 && !erros.some((e) => sessaoExpirada(e.reason))) {
+      setFalhou(true);
+    }
+  }
 
   useEffect(() => {
     async function carregar() {
       setSessao(await carregarSessao());
-
-      // Se uma das buscas falhar, as outras continuam
-      listarMinhasRoupas().then((r) => setPecas(r.length)).catch(() => setPecas(0));
-      listarMinhasCurtidas().then((c) => setCurtidas(c.length)).catch(() => setCurtidas(0));
-      listarMatches().then((m) => setMatches(m.length)).catch(() => setMatches(0));
+      carregarNumeros();
     }
     carregar();
   }, []);
@@ -38,7 +56,7 @@ export default function Perfil() {
           if (!ok) {
             Alert.alert(
               "Atenção",
-              "Não foi possível apagar todos os dados do login neste aparelho. Tente sair novamente."
+              "Não foi possível apagar todos os dados do login neste aparelho. Tente sair novamente.",
             );
             return;
           }
@@ -65,6 +83,13 @@ export default function Perfil() {
         <Numero valor={matches} rotulo="Matches" />
       </View>
 
+      {falhou && (
+        <View style={styles.aviso}>
+          <Text style={styles.textoAviso}>Não foi possível carregar todos os números.</Text>
+          <Botao texto="Tentar novamente" onPress={carregarNumeros} contorno />
+        </View>
+      )}
+
       <View style={styles.botoes}>
         <Botao texto="Meu Closet" onPress={() => router.push("/closet")} />
         <Botao texto="Meus matches" onPress={() => router.push("/matches")} contorno />
@@ -77,7 +102,7 @@ export default function Perfil() {
 function Numero({ valor, rotulo }: { valor: number | null; rotulo: string }) {
   return (
     <View style={styles.numero}>
-      <Text style={styles.valor}>{valor === null ? "…" : valor}</Text>
+      <Text style={styles.valor}>{valor === null ? "…" : Number.isNaN(valor) ? "—" : valor}</Text>
       <Text style={styles.rotulo}>{rotulo}</Text>
     </View>
   );
@@ -132,6 +157,15 @@ const styles = StyleSheet.create({
   rotulo: {
     color: cores.textoSuave,
     marginTop: 2,
+  },
+  aviso: {
+    alignSelf: "stretch",
+    marginTop: 12,
+    gap: 8,
+  },
+  textoAviso: {
+    color: cores.perigo,
+    textAlign: "center",
   },
   botoes: {
     alignSelf: "stretch",

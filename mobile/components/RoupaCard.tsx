@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { cores } from "../constants/cores";
 import { Roupa } from "../types/roupa";
-import { capaDaRoupa, nomeDoDono } from "../utils/roupas";
+import { capaDaRoupa, idDoDono, nomeDoDono } from "../utils/roupas";
 import Etiqueta from "./Etiqueta";
 
 // Card de uma peça no feed (Aula 09 — componente com props)
@@ -15,9 +15,14 @@ interface RoupaCardProps {
 
 export default function RoupaCard({ roupa, curtida, onCurtir, onAbrir }: RoupaCardProps) {
   const capa = capaDaRoupa(roupa);
-  const etiquetas = [roupa.category, roupa.size && `Tam. ${roupa.size}`, roupa.condition, roupa.style].filter(
-    Boolean
-  ) as string[];
+  // Peça cuja conta do dono foi removida: aparece no feed, mas não aceita curtidas
+  const disponivel = idDoDono(roupa) !== "";
+  const etiquetas = [
+    roupa.category,
+    roupa.size && `Tam. ${roupa.size}`,
+    roupa.condition,
+    roupa.style,
+  ].filter(Boolean) as string[];
 
   return (
     <Pressable
@@ -41,14 +46,18 @@ export default function RoupaCard({ roupa, curtida, onCurtir, onAbrir }: RoupaCa
             <Text style={styles.dono}>@{nomeDoDono(roupa)}</Text>
           </View>
 
-          <Pressable onPress={onCurtir} hitSlop={12} style={styles.curtir}>
-            <Ionicons
-              name={curtida ? "heart" : "heart-outline"}
-              size={30}
-              color={curtida ? cores.curtida : cores.textoSuave}
-            />
-            <Text style={styles.contador}>{roupa.likesCount || 0}</Text>
-          </Pressable>
+          {disponivel ? (
+            <Pressable onPress={onCurtir} hitSlop={12} style={styles.curtir}>
+              <Ionicons
+                name={curtida ? "heart" : "heart-outline"}
+                size={30}
+                color={curtida ? cores.curtida : cores.textoSuave}
+              />
+              <Text style={styles.contador}>{roupa.likesCount || 0}</Text>
+            </Pressable>
+          ) : (
+            <Text style={styles.indisponivel}>Indisponível</Text>
+          )}
         </View>
 
         {etiquetas.length > 0 && (
@@ -98,6 +107,12 @@ const styles = StyleSheet.create({
   curtir: {
     alignItems: "center",
     marginLeft: 12,
+  },
+  indisponivel: {
+    marginLeft: 12,
+    fontSize: 12,
+    fontWeight: "bold",
+    color: cores.textoSuave,
   },
   contador: {
     fontSize: 12,
