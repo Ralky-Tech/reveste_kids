@@ -156,7 +156,15 @@ export default function DetalhesRoupa() {
         </View>
 
         {minha ? (
-          <Botao texto="Excluir peça" cor={cores.perigo} contorno onPress={confirmarExclusao} />
+          <View style={styles.botoesProprietario}>
+            <Botao
+              texto="Editar peça"
+              cor={cores.primaria}
+              contorno
+              onPress={() => router.push(`/roupas/editar/${id}`)}
+            />
+            <Botao texto="Excluir peça" cor={cores.perigo} contorno onPress={confirmarExclusao} />
+          </View>
         ) : semDono ? (
           <Text style={styles.indisponivel}>
             Esta peça não está disponível para troca: a conta de quem anunciou foi removida.
@@ -224,6 +232,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     textAlign: "center",
+  },
+  botoesProprietario: {
+    gap: 12,
   },
   textoCurtidas: {
     marginLeft: 6,

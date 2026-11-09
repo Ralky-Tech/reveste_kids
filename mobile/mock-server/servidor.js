@@ -315,6 +315,22 @@ async function rotear(req, res) {
     const roupa = roupas.find((r) => r._id === partes[1]);
     if (!roupa) return responder(res, 404, { error: "Peça não encontrada." });
     if (metodo === "GET") return responder(res, 200, formatarRoupa(req, roupa));
+    if (metodo === "PUT") {
+      if (roupa.userId !== usuario._id) {
+        return responder(res, 403, { error: "Você só pode atualizar as suas peças." });
+      }
+      const corpo = await lerJson(req);
+      if (!corpo || typeof corpo !== "object" || Array.isArray(corpo)) {
+        return responder(res, 400, { error: "Dados inválidos para atualizar a peça." });
+      }
+      if (Object.hasOwn(corpo, "media") && !Array.isArray(corpo.media)) {
+        return responder(res, 400, { error: "A lista de mídias deve ser um array." });
+      }
+      for (const campo of ["title", "description", "size", "category", "media", "condition", "style"]) {
+        if (Object.hasOwn(corpo, campo)) roupa[campo] = corpo[campo];
+      }
+      return responder(res, 200, formatarRoupa(req, roupa));
+    }
     if (metodo === "DELETE") {
       if (roupa.userId !== usuario._id) {
         return responder(res, 403, { error: "Você só pode excluir as suas peças." });
@@ -414,7 +430,7 @@ async function rotear(req, res) {
 const servidor = http.createServer(async (req, res) => {
   // O mock não usa cookies: libera a origem para testes locais no Expo web.
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") {
     res.writeHead(204);

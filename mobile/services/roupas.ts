@@ -23,6 +23,14 @@ export async function criarRoupa(roupa: Omit<Roupa, "_id" | "userId">) {
   return resposta.data;
 }
 
+export async function atualizarRoupa(
+  id: string,
+  dados: Omit<Roupa, "_id" | "userId" | "likesCount" | "createdAt">,
+) {
+  const resposta = await api.put("/clothes/" + id, dados);
+  return resposta.data;
+}
+
 export async function excluirRoupa(id: string) {
   await api.delete(`/clothes/${id}`);
 }
