@@ -93,6 +93,7 @@ export default function Perfil() {
 
       <View style={styles.botoes}>
         <Botao texto="Meu Closet" onPress={() => router.push("/closet")} />
+        <Botao texto="Explorar closets" onPress={() => router.push("/closets")} contorno />
         <Botao texto="Meus matches" onPress={() => router.push("/matches")} contorno />
         <Botao texto="Sair da conta" onPress={sair} cor={cores.perigo} contorno />
       </View>
