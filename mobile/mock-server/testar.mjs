@@ -23,6 +23,15 @@ const post = (p, corpo, token) =>
     },
     body: JSON.stringify(corpo),
   });
+const put = (p, corpo, token) =>
+  fetch(B + p, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: "Bearer " + token } : {}),
+    },
+    body: JSON.stringify(corpo),
+  });
 const get = (p, token) =>
   fetch(B + p, { headers: token ? { Authorization: "Bearer " + token } : {} });
 const ok = (cond, msg) => {
@@ -41,6 +50,15 @@ const preflight = await fetch(B + "/api/notifications/n-curtida/read", {
 });
 ok(preflight.status === 204 && preflight.headers.get("access-control-allow-origin") === "*", "preflight web libera origem sem exigir login");
 ok(preflight.headers.get("access-control-allow-methods").includes("PATCH") && preflight.headers.get("access-control-allow-headers").includes("Authorization"), "CORS permite PATCH, Authorization e Content-Type");
+const preflightPut = await fetch(B + "/clothes/r-body", {
+  method: "OPTIONS",
+  headers: {
+    Origin: "http://localhost:8081",
+    "Access-Control-Request-Method": "PUT",
+    "Access-Control-Request-Headers": "authorization,content-type",
+  },
+});
+ok(preflightPut.status === 204 && preflightPut.headers.get("access-control-allow-methods").includes("PUT"), "CORS permite PUT");
 const respostaWeb = await get("/clothes");
 ok(respostaWeb.status === 401 && respostaWeb.headers.get("access-control-allow-origin") === "*", "respostas de erro também têm cabeçalhos CORS");
 
@@ -64,7 +82,48 @@ ok(
   d.every((r) => r.media[0].url.startsWith(`${B}/imagens/`)),
   "imagens com endereço completo",
 );
-const img = await fetch(d[0].media[0].url);
+const roupaOriginal = d.find((r) => r._id === "r-body");
+let respostaPut = await put("/clothes/r-body", { title: "Body editado" });
+ok((await j(respostaPut))[0] === 401, "atualização sem login -> 401");
+const dadosEdicao = {
+  title: "Body atualizado",
+  description: "Descrição atualizada",
+  size: "G",
+  category: "Camiseta",
+  media: [{ type: "image", url: `${B}/imagens/body.jpg` }],
+  condition: "Nova",
+  style: "Festa",
+};
+[s, d] = await j(await put("/clothes/r-body", dadosEdicao, token));
+ok(
+  s === 200 &&
+    d._id === "r-body" &&
+    d.title === dadosEdicao.title &&
+    d.description === dadosEdicao.description &&
+    d.size === dadosEdicao.size &&
+    d.category === dadosEdicao.category &&
+    d.condition === dadosEdicao.condition &&
+    d.style === dadosEdicao.style &&
+    d.media[0].url === dadosEdicao.media[0].url &&
+    d.userId._id === "u-teste" &&
+    d.likesCount === roupaOriginal.likesCount,
+  "proprietário atualiza a peça e recebe resposta formatada",
+);
+[s, d] = await j(await put("/clothes/r-body", { title: "Somente título" }, token));
+ok(
+  s === 200 &&
+    d.title === "Somente título" &&
+    d.description === dadosEdicao.description &&
+    d.media[0].url === dadosEdicao.media[0].url,
+  "campos não enviados permanecem inalterados",
+);
+[, d] = await j(await post("/auth", { email: "ana@teste.com", password: "123456" }));
+const tokenAna = d.token;
+[s, d] = await j(await put("/clothes/r-body", { title: "Alteração não autorizada" }, tokenAna));
+ok(s === 403 && d.error, "outra pessoa não pode atualizar a peça");
+[s, d] = await j(await get("/clothes/r-body", token));
+ok(s === 200 && d.title === "Somente título", "tentativa não autorizada não altera a peça");
+const img = await fetch(roupaOriginal.media[0].url);
 ok(
   img.status === 200 && img.headers.get("content-type") === "image/jpeg",
   "imagem de exemplo é servida",
